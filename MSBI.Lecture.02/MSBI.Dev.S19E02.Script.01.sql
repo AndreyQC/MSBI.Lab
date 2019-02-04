@@ -49,7 +49,7 @@ ORDER BY 1;
 
 
 --wrong way
-SELECT empid, firstname + ' ' + lastname
+SELECT empid, firstname + ' ' + lastname fullname
 FROM HR.Employees;
 
 --right way
@@ -90,12 +90,19 @@ FROM HR.Employees
 SELECT country, YEAR(hiredate) AS yearhired
 FROM HR.Employees
 WHERE yearhired >= 2003;
+
+
+--NON SARGABLE BUT WORKS
+SELECT country, YEAR(hiredate) AS yearhired
+FROM HR.Employees
+WHERE YEAR(hiredate) >= 2003;
 --should use YEAR(hiredate) >= 2003 better hiredate >= '20030101'
 
 
 --Note that an alias created by the SELECT phase isnt even visible to other expressions that
 --appear in the same SELECT list. For example, the following query isnt valid.
---!!!!!!!  TODO Meaning?????
+--!!!!!!!  TODO Meaning????? 
+-- Andrey to review
 SELECT empid, country, YEAR(hiredate) AS yearhired, YEAR(hiredate) - 1 AS prevyear
 FROM HR.Employees;
 
@@ -106,7 +113,10 @@ Using the FROM and SELECT Clauses
 ============================================================================*/
 
 -- alias for table
-SELECT E.empid, firstname AS fn, lastname
+SELECT
+    E.empid,
+    E.firstname AS fn,
+    E.lastname
 FROM HR.Employees AS E;
 
 --alias for column
