@@ -1,0 +1,30 @@
+---
+topics:
+- topicname: Using Subqueries, Table Expressions, and the APPLY Operator
+  subtopics:
+   - subtopicname: Self-Contained Subqueries
+   - subtopicname: Correlated Subqueries
+   - subtopicname: Table Expressions
+   - subtopicname: Derived Tables
+   - subtopicname: CTEs
+   - subtopicname: recursive CTE
+   - subtopicname: Views and Inline Table-Valued Functions
+   - subtopicname: APPLY
+   - subtopicname: CROSS APPLY
+   - subtopicname: OUTER APPLY
+- topicname: Using Set Operators
+  subtopics:
+   - subtopicname: UNION
+   - subtopicname: UNION ALL
+   - subtopicname: EXCEPT
+   - subtopicname: INTERSECT
+- topicname: Grouping and Windowing
+  subtopics:
+   - subtopicname: Working with a Single Grouping Set
+   - subtopicname: Working with Multiple Grouping Sets
+- topicname: Pivoting and Unpivoting Data
+  subtopics:
+   - subtopicname: Pivoting Data
+   - subtopicname: Unpivoting Data
+
+---
