@@ -11,6 +11,7 @@ topics:
    - subtopicname: Views and Inline Table-Valued Functions
    - subtopicname: APPLY
    - subtopicname: CROSS APPLY
+     task: true
    - subtopicname: OUTER APPLY
 - topicname: Using Set Operators
   subtopics:
@@ -21,10 +22,15 @@ topics:
 - topicname: Grouping and Windowing
   subtopics:
    - subtopicname: Working with a Single Grouping Set
+     task: true
    - subtopicname: Working with Multiple Grouping Sets
+     task: true
 - topicname: Pivoting and Unpivoting Data
   subtopics:
    - subtopicname: Pivoting Data
    - subtopicname: Unpivoting Data
-
+- topicname: Entity-Attribute-Value pattern (EAV) Online shop
+  subtopics:
+   - subtopicname: Problem with wide table. Sparse type of column
+   - subtopicname: EAV review pro and cons
 ---

@@ -6,6 +6,7 @@ topics:
      keywords: [FRAMES]
    - subtopicname: Window Ranking Functions
      keywords: [ROW_NUMBER, RANK, DENSE_RANK, NTILE]
+     task: true
    - subtopicname: Window Offset Functions
      keywords: [LAG, LEAD]
 - topicname: Creating and Altering Tables
@@ -24,5 +25,11 @@ topics:
    - subtopicname: Foreign Key Constraints
    - subtopicname: Check Constraints
    - subtopicname: Default Constraints
-
+- topicname: SSDT How to manage database as a source code
+  subtopics:
+   - subtopicname: SSDT review
+   - subtopicname: Create a project
+   - subtopicname: Merge changes
+   - subtopicname: Deploy to server
+   - subtopicname: Homework assignment
 ---

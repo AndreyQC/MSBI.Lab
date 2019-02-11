@@ -9,9 +9,9 @@ USE TSQL2012
 --the simple form
 
 SELECT productid,
-          productname,
-          unitprice,
-          discontinued,
+        productname,
+        unitprice,
+        discontinued,
           CASE discontinued
                WHEN 0 THEN 'No'
                WHEN 1 THEN 'Yes'
@@ -263,56 +263,56 @@ SELECT * FROM Production.Suppliers
 -- cross join
 
 SELECT D.n AS theday,
-	 S.n AS shiftno
+  S.n AS shiftno
 FROM dbo.Nums AS D
-	CROSS JOIN dbo.Nums AS S
-	WHERE D.n <= 7
-		AND S.N <= 3
+ CROSS JOIN dbo.Nums AS S
+ WHERE D.n <= 7
+  AND S.N <= 3
 ORDER BY theday, shiftno;
 
 -- inner join
 
 SELECT
-     S.companyname AS supplier,
-     S.country,
-     P.productid,
-     P.productname,
-     P.unitprice
+    S.companyname AS supplier,
+    S.country,
+    P.productid,
+    P.productname,
+    P.unitprice
 FROM Production.Suppliers AS S
-     INNER JOIN Production.Products AS P
-          ON P.supplierid = S.supplierid -- AND S.country = N'Japan'
+    INNER JOIN Production.Products AS P
+        ON P.supplierid = S.supplierid -- AND S.country = N'Japan'
 WHERE S.country = N'Japan';
 
 -- for inner we can move filter to ON
 SELECT
-	S.companyname AS supplier,
-	S.country,
-	P.productid,
-	P.productname,
-	P.unitprice
+    S.companyname AS supplier,
+    S.country,
+    P.productid,
+    P.productname,
+    P.unitprice
 FROM Production.Suppliers AS S
-	INNER JOIN Production.Products AS P
-		ON S.supplierid = P.supplierid
-			AND S.country = N'Japan';
+    INNER JOIN Production.Products AS P
+        ON S.supplierid = P.supplierid
+        AND S.country = N'Japan';
 
 --Outer Joins
 
 SELECT
-	S.companyname AS supplier,
-	S.country,
-	P.productid,
-	P.productname,
-	P.unitprice
+    S.companyname AS supplier,
+    S.country,
+    P.productid,
+    P.productname,
+    P.unitprice
 FROM Production.Suppliers AS S
-	LEFT OUTER JOIN Production.Products AS P
-		ON S.supplierid = P.supplierid 
-		 --AND S.country = N'Japan'
+    LEFT OUTER JOIN Production.Products AS P
+        ON S.supplierid = P.supplierid 
+   --AND S.country = N'Japan'
 WHERE S.country = N'Japan';
 
 
 SELECT
-	S.companyname AS supplier,
-	S.country
+ S.companyname AS supplier,
+ S.country
 
 FROM Production.Suppliers AS S
 WHERE S.country = N'Japan';
@@ -320,57 +320,57 @@ WHERE S.country = N'Japan';
 --very different roles, and therefore, they arent interchangeable
 
 SELECT
-	S.companyname AS supplier,
-	S.country,
-	P.productid,
-	P.productname,
-	P.unitprice
+ S.companyname AS supplier,
+ S.country,
+ P.productid,
+ P.productname,
+ P.unitprice
 FROM Production.Suppliers AS S
-	LEFT OUTER JOIN Production.Products AS P
-	ON S.supplierid = P.supplierid
-		AND S.country = N'Japan';
+ LEFT OUTER JOIN Production.Products AS P
+ ON S.supplierid = P.supplierid
+  AND S.country = N'Japan';
 
 
 SELECT E.empid,
-	E.firstname + N' ' + E.lastname AS emp,
-	M.firstname + N' ' + M.lastname AS mgr
+ E.firstname + N' ' + E.lastname AS emp,
+ M.firstname + N' ' + M.lastname AS mgr
 FROM HR.Employees AS E
-	LEFT OUTER JOIN HR.Employees AS M
-		ON E.mgrid = M.empid;
+ LEFT OUTER JOIN HR.Employees AS M
+  ON E.mgrid = M.empid;
 
 
 
 --multi joins
 
 SELECT
-	S.companyname AS supplier,
-	S.country,
-	P.productid,
-	P.productname,
-	P.unitprice,
-	C.categoryname
+ S.companyname AS supplier,
+ S.country,
+ P.productid,
+ P.productname,
+ P.unitprice,
+ C.categoryname
 FROM Production.Suppliers AS S
-	LEFT OUTER JOIN Production.Products AS P
-		ON S.supplierid = P.supplierid
-	INNER JOIN Production.Categories AS C
-		ON C.categoryid = P.categoryid
+ LEFT OUTER JOIN Production.Products AS P
+  ON S.supplierid = P.supplierid
+ INNER JOIN Production.Categories AS C
+  ON C.categoryid = P.categoryid
 WHERE S.country = N'Japan';
 
 SELECT
-	S.companyname AS supplier,
-	S.country,
-	P.productid,
-	P.productname,
-	P.unitprice,
-	C.categoryname
+ S.companyname AS supplier,
+ S.country,
+ P.productid,
+ P.productname,
+ P.unitprice,
+ C.categoryname
 FROM Production.Suppliers AS S
-	LEFT OUTER JOIN
-		(
-			Production.Products AS P
-			INNER JOIN Production.Categories AS C
-			ON C.categoryid = P.categoryid
-		)
-		ON S.supplierid = P.supplierid
+LEFT OUTER JOIN
+ (
+  Production.Products AS P
+  INNER JOIN Production.Categories AS C
+  ON C.categoryid = P.categoryid
+ )
+ ON S.supplierid = P.supplierid
 WHERE S.country = N'Japan';
 
 

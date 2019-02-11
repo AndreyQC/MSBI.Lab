@@ -1,0 +1,33 @@
+---
+topics:
+- topicname: Getting Started with the SELECT Statement
+  subtopics:   
+   - subtopicname: The FROM Clause
+   - subtopicname: The SELECT Clause
+- topicname: Filtering Data with Predicates
+  subtopics:
+   - subtopicname: Predicates, Three-Valued Logic, and Search Arguments
+   - subtopicname: Combining Predicates
+   - subtopicname: Filtering Character Data
+   - subtopicname: Filtering Date and Time Data
+- topicname: Using Joins
+  subtopics:
+   - subtopicname: Cross Joins
+   - subtopicname: Inner Joins
+   - subtopicname: Outer Joins
+   - subtopicname: Multi-Join Queries
+- topicname: Sorting Data
+  subtopics:
+   - subtopicname: Understanding When Order Is Guaranteed
+   - subtopicname: Using the ORDER BY Clause to Sort Data
+- topicname: Filtering Data with TOP and OFFSET FETCH
+  subtopics:
+   - subtopicname: Filtering Data with TOP
+   - subtopicname: Filtering Data with OFFSET-FETCH
+   - subtopicname: SARG
+- topicname: Database design
+  subtopics: 
+   - subtopicname: Library OLTP
+   - subtopicname: Choosing a Data Type for Keys
+   - subtopicname: Online Shop use case scenario
+---

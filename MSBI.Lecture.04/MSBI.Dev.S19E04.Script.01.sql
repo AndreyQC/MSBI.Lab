@@ -55,7 +55,7 @@ SELECT
 FROM Production.Products
 WHERE unitprice =
     (
-        SELECT MAX(unitprice)
+        SELECT MIN(unitprice)
         FROM Production.Products
     );
 
@@ -82,6 +82,7 @@ WHERE supplierid IN
         FROM Production.Suppliers
         WHERE country = N'Japan'
     );
+
 
 /*---------------------------------------------------------------------------------------- 
    - subtopicname: Correlated Subqueries
@@ -120,7 +121,7 @@ WHERE EXISTS
         SELECT 1
         FROM Sales.Orders AS O
         WHERE O.custid = C.custid
-        AND O.orderdate = '20070212'
+        AND O.orderdate = '20070214'
     );
 
 -- negative
@@ -130,7 +131,7 @@ SELECT
 FROM Sales.Customers AS C
 WHERE NOT EXISTS
     (
-        SELECT *
+        SELECT 1
         FROM Sales.Orders AS O
         WHERE O.custid = C.custid
         AND O.orderdate = '20070212'
@@ -153,7 +154,7 @@ FROM
         unitprice
     FROM Production.Products
 ) AS D
-WHERE rownum <= 1;
+WHERE rownum <= 2;
 
 
 /*---------------------------------------------------------------------------------------- 
@@ -201,6 +202,34 @@ SELECT empid, mgrid, firstname, lastname, distance
 FROM EmpsCTE;
 
 
+WITH EmpsCTE AS
+(
+    SELECT empid, mgrid, firstname, lastname, 0 AS distance
+    FROM HR.Employees
+    WHERE empid = 1
+    --UNION ALL
+    --SELECT empid, mgrid, firstname, lastname, 1 AS distance
+    --FROM HR.Employees
+    --WHERE mgrid = 1
+    --UNION ALL
+
+    --SELECT empid, mgrid, firstname, lastname, 2 AS distance
+    --FROM HR.Employees
+    --WHERE mgrid = 2
+    --UNION ALL
+    --SELECT empid, mgrid, firstname, lastname, 3 AS distance
+    --FROM HR.Employees
+    --WHERE mgrid IN (3,5)
+
+    UNION ALL
+
+    SELECT M.empid, M.mgrid, M.firstname, M.lastname, S.distance + 1 AS distance
+    FROM EmpsCTE AS S
+        JOIN HR.Employees AS M
+            ON S.empid = M.mgrid
+)
+SELECT empid, mgrid, firstname, lastname, distance
+FROM EmpsCTE;
 
 
 /*---------------------------------------------------------------------------------------- 
@@ -252,7 +281,7 @@ GO
 --
 
 SELECT *
-FROM HR.GetManagers(9) AS M;
+FROM HR.GetManagers(5) AS M;
 
 
 
@@ -273,6 +302,10 @@ WHERE supplierid = 1
 ORDER BY unitprice, productid
 OFFSET 0 ROWS FETCH FIRST 2 ROWS ONLY;
 
+SELECT S.supplierid, S.companyname AS supplier
+FROM Production.Suppliers AS S
+WHERE S.country = N'Japan'
+
 SELECT S.supplierid, S.companyname AS supplier, A.*
 FROM Production.Suppliers AS S
     CROSS APPLY 
@@ -284,7 +317,7 @@ FROM Production.Suppliers AS S
             OFFSET 0 ROWS FETCH FIRST 3 ROWS ONLY
         ) AS A
     WHERE S.country = N'Japan';
-
+-- give as a task to reproduce without APPLY
 SELECT S.supplierid, S.companyname AS supplier, A.*
 FROM Production.Suppliers AS S
     OUTER APPLY  
@@ -293,7 +326,7 @@ FROM Production.Suppliers AS S
             FROM Production.Products AS P
             WHERE P.supplierid = S.supplierid
             ORDER BY unitprice, productid
-            OFFSET 0 ROWS FETCH FIRST 2 ROWS ONLY
+            OFFSET 0 ROWS FETCH FIRST 3 ROWS ONLY
         ) AS A
     WHERE S.country = N'Japan';
 
@@ -302,7 +335,7 @@ FROM Production.Suppliers AS S
 /*=========================================
 sorting with null
 =========================================*/
-use AdventureWorks2014
+use AdventureWorks2016CTP3
 select [MiddleName] from  [Person].[Person] order by  [MiddleName]
 
 
@@ -418,6 +451,8 @@ SELECT STDEV(freight) FROM Sales.Orders
 
 SELECT COUNT(*) AS numorders
 FROM Sales.Orders;
+
+
 
 SELECT * FROM Sales.Orders; 
 
@@ -600,6 +635,7 @@ FROM Sales.Orders
 SELECT custid, [1], [2], [3], [4]
 FROM PivotData
 PIVOT(SUM(freight) FOR shipperid IN ([1],[2],[3],[4]) ) AS P;
+
 
 SELECT custid, [1], [2], [3]
 FROM Sales.Orders
