@@ -1,0 +1,35 @@
+---
+topics:
+- topicname: Using Window Functions
+  subtopics:
+   - subtopicname: Window Aggregate Functions
+     keywords: [FRAMES]
+   - subtopicname: Window Ranking Functions
+     keywords: [ROW_NUMBER, RANK, DENSE_RANK, NTILE]
+     task: true
+   - subtopicname: Window Offset Functions
+     keywords: [LAG, LEAD]
+- topicname: Creating and Altering Tables
+  subtopics:
+   - subtopicname: Managing and Configuring Databases
+   - subtopicname: Naming Tables and Columns
+   - subtopicname: Choosing Column Data Types
+   - subtopicname: NULL and Default Values
+   - subtopicname: The Identity Property and Sequence Numbers
+   - subtopicname: Computed Columns
+   - subtopicname: Table Compression
+- topicname: Enforcing Data Integrity
+  subtopics:
+   - subtopicname: Primary Key Constraints
+   - subtopicname: Unique Constraints
+   - subtopicname: Foreign Key Constraints
+   - subtopicname: Check Constraints
+   - subtopicname: Default Constraints
+- topicname: SSDT How to manage database as a source code
+  subtopics:
+   - subtopicname: SSDT review
+   - subtopicname: Create a project
+   - subtopicname: Merge changes
+   - subtopicname: Deploy to server
+   - subtopicname: Homework assignment
+---

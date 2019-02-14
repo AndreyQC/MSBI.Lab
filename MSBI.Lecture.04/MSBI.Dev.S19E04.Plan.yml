@@ -20,7 +20,7 @@ topics:
    - subtopicname: EXCEPT
    - subtopicname: INTERSECT
 - topicname: Grouping and Windowing
-  subtopics:
+  subtopics: 
    - subtopicname: Working with a Single Grouping Set
      task: true
    - subtopicname: Working with Multiple Grouping Sets
