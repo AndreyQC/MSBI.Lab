@@ -206,6 +206,7 @@ GO
 SELECT TOP (10) categoryname FROM Production.Categories;
 
 -- create schema
+go
 CREATE SCHEMA Production AUTHORIZATION dbo;
 GO
 
