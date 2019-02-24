@@ -1,0 +1,39 @@
+---
+topics:
+- topicname: Inserting Data
+  subtopics:
+   - subtopicname: INSERT VALUES
+   - subtopicname: INSERT SELECT
+   - subtopicname: INSERT EXEC
+   - subtopicname: SELECT INTO   
+- topicname: Updating Data
+  subtopics:
+   - subtopicname: UPDATE Statement
+   - subtopicname: UPDATE Based on Join
+   - subtopicname: Nondeterministic UPDATE
+   - subtopicname: UPDATE and Table Expressions
+   - subtopicname: UPDATE Based on a Variable
+   - subtopicname: UPDATE All-at-Once
+- topicname: Deleting Data
+  subtopics:
+   - subtopicname: DELETE Statement
+   - subtopicname: TRUNCATE Statement
+   - subtopicname: DELETE Based on a Join
+   - subtopicname: DELETE Using Table Expressions
+- topicname: Other Data Modification Aspects
+  subtopics:
+   - subtopicname: Using the IDENTITY Column Property
+     keywords: [SCOPE_IDENTITY,IDENTITY,IDENT_CURRENT]
+   - subtopicname: Using the Sequence Object
+- topicname: Merging Data
+  subtopics:
+   - subtopicname: Using the MERGE Statement
+- topicname: Using the OUTPUT Option
+  subtopics:
+   - subtopicname: Working with the OUTPUT Clause
+   - subtopicname: INSERT with OUTPUT
+   - subtopicname: DELETE with OUTPUT
+   - subtopicname: UPDATE with OUTPUT
+   - subtopicname: MERGE with OUTPUT
+   - subtopicname: Composable DML
+---

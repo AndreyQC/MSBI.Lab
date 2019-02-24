@@ -192,6 +192,7 @@ SET @XmlDocument = N'
      </CustomersOrders>';
 -- Create an internal representation
 EXEC sys.sp_xml_preparedocument @DocHandle OUTPUT, @XmlDocument;
+
 -- Attribute-centric mapping
 SELECT *
 FROM OPENXML (@DocHandle, '/CustomersOrders/Customer',1)
@@ -206,6 +207,8 @@ SELECT *
 FROM OPENXML (@DocHandle, '/CustomersOrders/Customer',11)
 WITH (custid INT, companyname NVARCHAR(40));
 -- Remove the DOM
+
+
 EXEC sys.sp_xml_removedocument @DocHandle;
 GO
 
@@ -528,7 +531,8 @@ FROM OPENJSON(@json)
             id int 'strict $.id',  
             firstName nvarchar(50) '$.info.name', 
             lastName nvarchar(50) '$.info.surname',  
-            age int, dateOfBirth datetime2 '$.dob'
+            age int, 
+            dateOfBirth datetime2 '$.dob'
         )  
 
 /*==============================================================================================================
@@ -557,13 +561,14 @@ SELECT TOP(2)
             ON t.TaskId = st.TaskId
         INNER JOIN [dbo].[Users] AS stud
          ON  stud.[ID]= stl.StudentId
+    ORDER BY t.TaskId  DESC
 FOR JSON PATH
 
 SELECT Name,Surname,
      JSON_VALUE(jsonCol,'$.info.address.PostCode') AS PostCode,
      JSON_VALUE(jsonCol,'$.info.address."Address Line 1"')+' '
      +JSON_VALUE(jsonCol,'$.info.address."Address Line 2"') AS Address,
-     JSON_QUERY(jsonCol,'$.info.skills') AS SkillsFROM PeopleWHERE ISJSON(jsonCol)>0
+     JSON_QUERY(jsonCol,'$.info.skills') AS Skills FROM People WHERE ISJSON(jsonCol)>0
  AND JSON_VALUE(jsonCol,'$.info.address.Town')='Belgrade'
  AND Status='Active'ORDER BY JSON_VALUE(jsonCol,'$.info.address.PostCode')
 

@@ -1,0 +1,46 @@
+---
+topics:
+- topicname: Implementing Transactions, Error Handling, and Dynamic SQL
+  subtopics:
+   - subtopicname: Understanding Transactions
+     keywords: [ACID Properties of Transactions,Atomicity,Consistency,Isolation,Durability]
+   - subtopicname: Types of Transactions
+   - subtopicname: Transaction Commands
+   - subtopicname: Transaction Levels and States
+     keywords: [TRANCOUNT,XACT_STATE()]
+   - subtopicname: Transaction Modes
+     keywords: [explicit,XACT_STATE()]
+   - subtopicname: Additional Transaction Options     
+- topicname: Basic Locking
+  subtopics:
+   - subtopicname: Lock Compatibility
+   - subtopicname: Blocking
+   - subtopicname: Deadlocking
+- topicname: Transaction Isolation Levels
+  subtopics:
+   - subtopicname: READ COMMITTED
+   - subtopicname: READ UNCOMMMITED
+   - subtopicname: READ COMMITTED SNAPSHOT 
+   - subtopicname: REPEATABLE READ
+   - subtopicname: SNAPSHOT
+   - subtopicname: SERIALIZABLE
+- topicname: Detecting and Raising Errors
+  subtopics:
+   - subtopicname: Analyzing Error Messages
+     keywords: [Error number,Severity level,State,Error message]
+   - subtopicname: RAISERROR
+   - subtopicname: THROW
+   - subtopicname: TRY_CONVERT and TRY_PARSE
+- topicname: Handling Errors After Detection
+  subtopics:
+   - subtopicname: Unstructured Error Handling Using @@ERROR
+   - subtopicname: Structured Error Handling Using TRY/CATCH
+   - subtopicname: THROW vs. RAISERROR in TRY/CATCH
+- topicname: Using Dynamic SQL
+  subtopics:
+   - subtopicname: Dynamic SQL Overview
+   - subtopicname: Uses for Dynamic SQL
+   - subtopicname: The EXECUTE Command
+   - subtopicname: SQL Injection
+   - subtopicname: Using sp_executesql
+---
