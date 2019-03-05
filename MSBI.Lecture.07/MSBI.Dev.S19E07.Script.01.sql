@@ -81,7 +81,7 @@ WHERE custid=56
 SELECT orderyear, qty
 FROM Sales.vw_OrderTotalsByYear;
 
-
+/*
 -- won't work
 CREATE VIEW Sales.OrderTotalsByYear(orderyear, qty)
 WITH SCHEMABINDING
@@ -94,7 +94,7 @@ FROM Sales.Orders AS O
 		ON OD.orderid = O.orderid
 GROUP BY YEAR(orderdate);
 GO
-
+*/
 
 /*=========================================
 altering view

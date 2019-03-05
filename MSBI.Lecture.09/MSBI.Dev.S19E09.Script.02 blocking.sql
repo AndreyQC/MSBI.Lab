@@ -43,19 +43,18 @@ READ COMMITTED
 =========================================*/
 
 USE TSQL2012;
-SET TRANSACTION ISOLATION
-LEVEL READ COMMITTED;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 -----------------------------------------------------
 
 
 
-
+BEGIN TRAN;
 ------------------------------------------------------
-SELECT lastname, firstname
+SELECT empid, lastname, firstname, postalcode
 FROM HR.Employees;
 
 -------------------------------------------------------
-
+COMMIT TRAN;
 
 
 
@@ -66,30 +65,44 @@ Session 2
 =========================================*/
 
 USE TSQL2012;
-SET TRANSACTION ISOLATION LEVEL READ
-UNCOMMITTED;
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 --1------------------------------------------------------------
 
 --2------------------------------------------------------------
-SELECT lastname, firstname, region
+SELECT empid, lastname, firstname, postalcode
 FROM HR.Employees
 --3------------------------------------------------------------
 --4------------------------------------------------------------
-SELECT lastname, firstname, region
+SELECT empid, lastname, firstname, postalcode
 FROM HR.Employees;
 --5------------------------------------------------------------
 --6------------------------------------------------------------
 
-SELECT lastname, firstname
+SELECT empid, lastname, firstname
 FROM HR.Employees WITH (READUNCOMMITTED);
+
+
+/*=========================================
+REPEATABLE READ
+=========================================*/
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+BEGIN TRAN;
+SELECT empid, lastname, firstname, postalcode
+FROM HR.Employees;
+
+COMMIT TRAN;
+
 
 /*=========================================
 READ COMMITTED SNAPSHOT Session 1
 =========================================*/
 
 USE TSQL2012;
-ALTER DATABASE TSQL2012 SET
-READ_COMMITTED_SNAPSHOT ON;
+ALTER DATABASE TSQL2012 SET READ_COMMITTED_SNAPSHOT ON;
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
 --1------------------------------------------------------------
 BEGIN TRAN;
 --2------------------------------------------------------------

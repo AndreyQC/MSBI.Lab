@@ -173,7 +173,7 @@ SELECT
  orderid, orderdate, custid, empid
 FROM Sales.Orders
 ORDER BY orderdate DESC, orderid desc;
-
+/*
 10248
 11077
 11077
@@ -182,7 +182,7 @@ ORDER BY orderdate DESC, orderid desc;
 11075
 11076
 11077
-
+*/
 SELECT TOP (1) PERCENT orderid, orderdate, custid, empid
 FROM Sales.Orders
 ORDER BY orderdate DESC;
