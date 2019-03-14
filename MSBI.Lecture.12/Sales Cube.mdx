@@ -1,0 +1,8 @@
+SELECT 
+	{[Date].[Calendar Year].Allmembers} ON Columns,
+	 NON EMPTY
+	  {
+		[Product].[Product].AllMembers * 
+		[Measures].[Internet Sales Amount]
+	   } ON Rows
+FROM [Adventure Works]

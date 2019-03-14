@@ -1,7 +1,18 @@
 ---
-topics:
-- topicname: 
-  subtopics:
-   - subtopicname: 
-     keywords: []
+topics: 
+- topicname: Using Tools to Analyze Query Performance
+  subtopics: 
+   - subtopicname: Query Optimization Problems and the Query Optimizer
+   - subtopicname: SQL Server Extended Events, SQL Trace, and SQL Server Profiler
+   - subtopicname: Using SET Session Options and Analyzing Query Plans
+   - subtopicname: Using Dynamic Management Objects
+- topicname: Implementing Indexes and Statistics
+  subtopics: 
+   - subtopicname: Heap Tables
+   - subtopicname: Clustered Indexes
+   - subtopicname: Supporting Queries with Indexes
+- topicname: Understanding Cursors, Sets, and Temporary Tables
+  subtopics: 
+   - subtopicname: Cursors
+   - subtopicname: Temporary Tables
 ---

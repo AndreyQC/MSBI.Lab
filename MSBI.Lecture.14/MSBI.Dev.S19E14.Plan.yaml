@@ -4,4 +4,9 @@ topics:
   subtopics:
    - subtopicname: 
      keywords: []
+- topicname: Designing and Implementing Control Flow
+  subtopics:
+   - subtopicname: Connection  Managers
+   - subtopicname: Control Flow Tasks and Containers
+   - subtopicname: Precedence Constraints      
  
