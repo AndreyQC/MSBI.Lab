@@ -1,0 +1,23 @@
+---
+topics:
+- topicname: Designing and Implementing Control Flow
+  subtopics:
+   - subtopicname: parametrize Connection  Managers
+   - subtopicname: non-blocking transformations
+   - subtopicname: partial-blocking transformation
+   - subtopicname: blocking transformation
+   - subtopicname: aggregate
+   - subtopicname: error output
+   - subtopicname: Conditional split
+   
+- topicname: Designing and Implementing Data Flow
+  subtopics:
+   - subtopicname: Data Flow Task
+   - subtopicname: Data Flow Source Adapters
+   - subtopicname: 
+- topicname: CrimeStatistic Project
+  subtopics:
+   - subtopicname: CrimeStat.DWH
+   - subtopicname: CrimeStat.SSIS
+   - subtopicname: CrimeStat Tasks
+---
