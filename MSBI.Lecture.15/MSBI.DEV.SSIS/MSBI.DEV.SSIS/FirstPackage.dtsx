@@ -1,0 +1,603 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/12/2018 9:45:00 AM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="EPRUSARW1371"
+  DTS:CreatorName="SARATOV\Andrey_Potapov"
+  DTS:Description="SSIS Package Description"
+  DTS:DTSID="{87741E99-EE1D-4843-B84B-8F4B114F4403}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="14.0.3002.68"
+  DTS:LocaleID="1033"
+  DTS:MaxErrorCount="0"
+  DTS:ObjectName="FirstPackage"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{E098A747-BF75-4807-BAF6-91EDEBBDAF1F}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[DestinationConnectionOLEDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{CA5CAE6B-AC8C-4444-8097-0834262176DB}"
+      DTS:ObjectName="DestinationConnectionOLEDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=ECSC00A014AD\MSSQL2017TM;Initial Catalog=UNStatisticDWH;Provider=SQLNCLI11;Integrated Security=SSPI;Auto Translate=false;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[SourceConnectionOLEDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{00378203-FB72-47D0-8278-8FCF606B41DD}"
+      DTS:ObjectName="SourceConnectionOLEDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=andreypotapov.database.windows.net;User ID=Andrey_Potapov;Initial Catalog=MSBIAzure;Provider=SQLNCLI11.1;Auto Translate=false;">
+          <DTS:Password
+            DTS:Name="Password"
+            Sensitive="1"
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAsBs9GF9tzkWkuV7+aN3o4QAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAACuaMJQVlFhQuG/C/x1LgBqAAAAAASAAACgAAAAEAAAAG4Xm28QKDblDUW94UwTKIgYAAAAO7nEXqkCIzvIOTotzs4OTNZ/ms6vS5yLFAAAAJBYK2BSuc8mME2E/aK8uW+/THPo</DTS:Password>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Data Flow Task 1"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:DelayValidation="True"
+      DTS:DTSID="{55EAADFB-B4E7-4521-9DDC-D3D4C90F51F8}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:FailPackageOnFailure="True"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Data Flow Task 1"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          defaultBufferSize="3145728"
+          version="1">
+          <components>
+            <component
+              refId="Package\Data Flow Task 1\Destination - WorkItemTag"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="Destination - WorkItemTag"
+              usesDispositions="true"
+              validateExternalMetadata="False"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[staging].[WorkItemTag]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Data Flow Task 1\Destination - WorkItemTag.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[DestinationConnectionOLEDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[DestinationConnectionOLEDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].Columns[WorkItemTagId]"
+                      cachedDataType="i4"
+                      cachedName="WorkItemTagId"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[WorkItemTagId]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemTagId]" />
+                    <inputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].Columns[WorkItemId]"
+                      cachedDataType="i4"
+                      cachedName="WorkItemId"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[WorkItemId]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemId]" />
+                    <inputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].Columns[Tag]"
+                      cachedDataType="nText"
+                      cachedName="Tag"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[Tag]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[Tag]" />
+                    <inputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].Columns[WorkItemSourceSystemId]"
+                      cachedDataType="i4"
+                      cachedName="WorkItemSourceSystemId"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[WorkItemSourceSystemId]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemSourceSystemId]" />
+                    <inputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].Columns[sysCreatedAt]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="sysCreatedAt"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[sysCreatedAt]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysCreatedAt]" />
+                    <inputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].Columns[sysChangedAt]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="sysChangedAt"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[sysChangedAt]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysChangedAt]" />
+                    <inputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].Columns[sysCreatedBy]"
+                      cachedDataType="i4"
+                      cachedName="sysCreatedBy"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[sysCreatedBy]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysCreatedBy]" />
+                    <inputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].Columns[sysChangedBy]"
+                      cachedDataType="i4"
+                      cachedName="sysChangedBy"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[sysChangedBy]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysChangedBy]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[WorkItemTagId]"
+                      dataType="i4"
+                      name="WorkItemTagId" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[WorkItemId]"
+                      dataType="i4"
+                      name="WorkItemId" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[Tag]"
+                      dataType="nText"
+                      name="Tag" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[WorkItemSourceSystemId]"
+                      dataType="i4"
+                      name="WorkItemSourceSystemId" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[sysCreatedAt]"
+                      dataType="dbTimeStamp"
+                      name="sysCreatedAt" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[sysChangedAt]"
+                      dataType="dbTimeStamp"
+                      name="sysChangedAt" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[sysCreatedBy]"
+                      dataType="i4"
+                      name="sysCreatedBy" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input].ExternalColumns[sysChangedBy]"
+                      dataType="i4"
+                      name="sysChangedBy" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Data Flow Task 1\Destination - WorkItemTag.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Destination - WorkItemTag.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Destination - WorkItemTag.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Destination - WorkItemTag.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Data Flow Task 1\Source - WorkItemTag"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="Source - WorkItemTag"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[staging].[WorkItemTag]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">0</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Data Flow Task 1\Source - WorkItemTag.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[SourceConnectionOLEDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[SourceConnectionOLEDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemTagId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[WorkItemTagId]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemTagId]"
+                      name="WorkItemTagId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[WorkItemId]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemId]"
+                      name="WorkItemId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[Tag]"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[Tag]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[Tag]"
+                      name="Tag"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemSourceSystemId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[WorkItemSourceSystemId]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[WorkItemSourceSystemId]"
+                      name="WorkItemSourceSystemId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysCreatedAt]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[sysCreatedAt]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysCreatedAt]"
+                      name="sysCreatedAt"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysChangedAt]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[sysChangedAt]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysChangedAt]"
+                      name="sysChangedAt"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysCreatedBy]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[sysCreatedBy]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysCreatedBy]"
+                      name="sysCreatedBy"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysChangedBy]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[sysChangedBy]"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].Columns[sysChangedBy]"
+                      name="sysChangedBy"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[WorkItemTagId]"
+                      dataType="i4"
+                      name="WorkItemTagId" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[WorkItemId]"
+                      dataType="i4"
+                      name="WorkItemId" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[Tag]"
+                      dataType="nText"
+                      name="Tag" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[WorkItemSourceSystemId]"
+                      dataType="i4"
+                      name="WorkItemSourceSystemId" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[sysCreatedAt]"
+                      dataType="dbTimeStamp"
+                      name="sysCreatedAt" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[sysChangedAt]"
+                      dataType="dbTimeStamp"
+                      name="sysChangedAt" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[sysCreatedBy]"
+                      dataType="i4"
+                      name="sysCreatedBy" />
+                    <externalMetadataColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output].ExternalColumns[sysChangedBy]"
+                      dataType="i4"
+                      name="sysChangedBy" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[WorkItemTagId]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[WorkItemTagId]"
+                      name="WorkItemTagId" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[WorkItemId]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[WorkItemId]"
+                      name="WorkItemId" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[Tag]"
+                      dataType="nText"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[Tag]"
+                      name="Tag" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[WorkItemSourceSystemId]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[WorkItemSourceSystemId]"
+                      name="WorkItemSourceSystemId" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[sysCreatedAt]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[sysCreatedAt]"
+                      name="sysCreatedAt" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[sysChangedAt]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[sysChangedAt]"
+                      name="sysChangedAt" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[sysCreatedBy]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[sysCreatedBy]"
+                      name="sysCreatedBy" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[sysChangedBy]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[sysChangedBy]"
+                      name="sysChangedBy" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Data Flow Task 1.Paths[OLE DB Source Output]"
+              endId="Package\Data Flow Task 1\Destination - WorkItemTag.Inputs[Destination Input]"
+              name="OLE DB Source Output"
+              startId="Package\Data Flow Task 1\Source - WorkItemTag.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Preparation SQL Task 1"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{2131FBAE-9481-4F3A-9E38-4020DCADEE31}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:FailPackageOnFailure="True"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Preparation SQL Task 1"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2017; © 2017 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{CA5CAE6B-AC8C-4444-8097-0834262176DB}"
+          SQLTask:SqlStatementSource="IF NOT EXISTS(SELECT * FROM sys.schemas WHERE name = N'staging')&#xA;BEGIN&#xA;EXEC(N'CREATE SCHEMA [staging]')&#xA;END&#xA;CREATE TABLE [staging].[WorkItemTag] (&#xA;[WorkItemTagId] int NOT NULL,&#xA;[WorkItemId] int,&#xA;[Tag] nvarchar(max),&#xA;[WorkItemSourceSystemId] int,&#xA;[sysCreatedAt] datetime,&#xA;[sysChangedAt] datetime,&#xA;[sysCreatedBy] int,&#xA;[sysChangedBy] int&#xA;)&#xA;GO&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[{8C4C4A7E-4E48-4078-8586-5C2F3EA5063B\}]"
+      DTS:CreationName=""
+      DTS:DTSID="{8C4C4A7E-4E48-4078-8586-5C2F3EA5063B}"
+      DTS:From="Package\Preparation SQL Task 1"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="{8C4C4A7E-4E48-4078-8586-5C2F3EA5063B}"
+      DTS:To="Package\Data Flow Task 1" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="160,42"
+          Id="Package\Data Flow Task 1"
+          TopLeft="20.5,107.5" />
+        <NodeLayout
+          Size="190,42"
+          Id="Package\Preparation SQL Task 1"
+          TopLeft="5.50000000000001,5.5" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[{8C4C4A7E-4E48-4078-8586-5C2F3EA5063B\}]"
+          TopLeft="100.5,47.5">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60"
+              Start="0,0"
+              End="0,52.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Data Flow Task 1">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="207,42"
+          Id="Package\Data Flow Task 1\Destination - WorkItemTag"
+          TopLeft="5.50000000000001,107.5" />
+        <NodeLayout
+          Size="186,42"
+          Id="Package\Data Flow Task 1\Source - WorkItemTag"
+          TopLeft="16,5.5" />
+        <EdgeLayout
+          Id="Package\Data Flow Task 1.Paths[OLE DB Source Output]"
+          TopLeft="109,47.5">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60"
+              Start="0,0"
+              End="0,52.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
