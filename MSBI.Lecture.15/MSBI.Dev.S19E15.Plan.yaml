@@ -4,7 +4,7 @@ topics:
   subtopics:
    - subtopicname: Connection  Managers
    - subtopicname: Control Flow Tasks and Containers
-   - subtopicname: Precedence Constraints     
+   - subtopicname: Precedence Constraints
 - topicname: Designing and Implementing Data Flow
   subtopics:
    - subtopicname: Data Flow Task
@@ -14,10 +14,5 @@ topics:
   subtopics:
    - subtopicname: CrimeStat.DWH
    - subtopicname: CrimeStat.SSIS
-   - subtopicname: CrimeStat Tasks     
-
-
-
-   
- 
- 
+   - subtopicname: CrimeStat Tasks
+---
