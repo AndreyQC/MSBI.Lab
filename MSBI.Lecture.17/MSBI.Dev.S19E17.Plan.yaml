@@ -1,0 +1,17 @@
+---
+topics:
+- topicname: CrimeStat.SSIS
+  subtopics:
+   - subtopicname: create Staging_Load_Countries.dtsx package
+   - subtopicname: create Staging_Transform_Country.dtsx package
+   - subtopicname: create Staging_Transform_UNCrime.dtsx package
+   - subtopicname: create Staging_Transform_WorldBank.dtsx package
+     keywords: [pivot transformation,unpivot transformation]
+   - subtopicname: create dwh_Load_DimDate.dtsx package
+     keywords: 
+      - keyword: stored procedure execution from package
+      - keyword: preciding constraint
+      - keyword: Using the Execute SQL Task to Generate Result Sets
+      - keyword: Dummy row for dimension
+   - subtopicname: create MasterPackage.dtsx pa
+---
