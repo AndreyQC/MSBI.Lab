@@ -1,0 +1,13 @@
+---
+topics:
+- topicname: CrimeStat.SSIS
+  subtopics:
+   - subtopicname: parametrization
+     keywords: 
+     - keyword: parameters
+     - keyword: variables
+   - subtopicname: Package Configurations
+   - subtopicname: Project Deployment model
+   - subtopicname: Environments
+   - subtopicname: Variables and mapping project parameters to environment variables
+---
