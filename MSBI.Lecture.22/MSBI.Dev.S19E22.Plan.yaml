@@ -1,0 +1,10 @@
+---
+topics:
+- topicname: CrimeStat.SSIS
+  subtopics:
+   - subtopicname: Incremental loading
+   - subtopicname: change data capture 
+   - subtopicname: Executing Stored Procedures with parameters
+   - subtopicname: Slowly Changed Dimensions (SDC)
+   - subtopicname: Master Package
+---
