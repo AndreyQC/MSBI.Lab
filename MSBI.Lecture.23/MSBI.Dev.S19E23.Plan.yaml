@@ -1,0 +1,15 @@
+---
+topics:
+- topicname: SSAS Tabular
+  subtopics:
+   - subtopicname: Tabular
+   - subtopicname: Multidimensional vs Tabular
+   - subtopicname: Architecture
+- topicname: Create CrimeStat.SSAS.Tab project
+  subtopics:
+   - subtopicname: Hierarchies
+     links:
+      - link: https://www.sqlbi.com/tools/tabular-editor/
+      - link: https://www.sqlbi.com/
+   - subtopicname: Using DAX
+---
