@@ -1,0 +1,10 @@
+---
+topics:
+- topicname: CrimeStat.SSIS
+  subtopics:
+   - subtopicname: Logging
+   - subtopicname: Event Handler
+   - subtopicname: Incremental loading
+   - subtopicname: Slowly Changed Dimensions (SDC)
+   - subtopicname: Master Package
+---
