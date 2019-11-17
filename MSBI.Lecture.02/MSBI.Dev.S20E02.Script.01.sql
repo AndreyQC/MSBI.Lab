@@ -187,6 +187,8 @@ DECLARE @X INT = '1';
 SELECT @X;
 
 
+--Yes, but don't do it
+
 DECLARE @Y INT = 'AAA';
 SELECT @Y;
 
