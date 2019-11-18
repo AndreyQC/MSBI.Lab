@@ -5,6 +5,8 @@ MSBI.Dev.S20E02.Script.01.sql
 USE [TSQL2012];
 GO
 
+SELECT 1; --For Git test
+
 --predicate
 SELECT [empid]
       ,[lastname]
