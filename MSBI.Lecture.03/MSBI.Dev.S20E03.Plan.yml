@@ -27,7 +27,6 @@ topics:
    - subtopicname: SARG
 - topicname: Database design
   subtopics: 
-   - subtopicname: Library OLTP
    - subtopicname: Choosing a Data Type for Keys
    - subtopicname: Online Shop use case scenario
 ---
