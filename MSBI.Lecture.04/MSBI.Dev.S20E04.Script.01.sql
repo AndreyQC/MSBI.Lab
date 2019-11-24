@@ -416,37 +416,6 @@ FROM Production.Suppliers AS S
 
 
 
-/*=========================================
-sorting with null
-=========================================*/
-use AdventureWorks2016CTP3
-select [MiddleName] from  [Person].[Person] order by  [MiddleName]
-
-
-
-
--- any some all
-
-IF OBJECT_ID('dbo.T1', N'U') IS NOT NULL DROP table dbo.t1;
-CREATE TABLE T1
-(ID int) ;
-GO
-INSERT T1 VALUES (1) ;
-INSERT T1 VALUES (2) ;
-INSERT T1 VALUES (3) ;
-INSERT T1 VALUES (4) ;
-
-IF 3 < SOME (SELECT ID FROM T1)
-PRINT 'TRUE' 
-ELSE
-PRINT 'FALSE' ;
-
-IF 3 < ALL (SELECT ID FROM T1)
-PRINT 'TRUE' 
-ELSE
-PRINT 'FALSE' ;
-
-
 /*========================================================================================================================
 - topicname: Grouping and Windowing
   subtopics:
