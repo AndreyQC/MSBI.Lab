@@ -3,6 +3,12 @@ MSBI.Dev.S19E04.Script.01
 =========================================*/
 
 /*
+- topicname: Using Set Operators
+  subtopics:
+   - subtopicname: UNION
+   - subtopicname: UNION ALL
+   - subtopicname: EXCEPT
+   - subtopicname: INTERSECT
 - topicname: Using Subqueries, Table Expressions, and the APPLY Operator
   subtopics:
    - subtopicname: Self-Contained Subqueries
@@ -11,16 +17,9 @@ MSBI.Dev.S19E04.Script.01
    - subtopicname: Derived Tables
    - subtopicname: CTEs
    - subtopicname: recursive CTE
-   - subtopicname: Views and Inline Table-Valued Functions
    - subtopicname: APPLY
    - subtopicname: CROSS APPLY
    - subtopicname: OUTER APPLY
-- topicname: Using Set Operators
-  subtopics:
-   - subtopicname: UNION
-   - subtopicname: UNION ALL
-   - subtopicname: EXCEPT
-   - subtopicname: INTERSECT
 - topicname: Grouping and Windowing
   subtopics:
    - subtopicname: Working with a Single Grouping Set
@@ -38,6 +37,92 @@ MSBI.Dev.S19E04.Script.01
    - subtopicname: Window Offset Functions
      keywords: [LAG, LEAD]
 */
+
+
+
+USE TSQL2012;
+GO
+
+/*========================================================================================================================
+- topicname: Using Set Operators
+  subtopics:
+   - subtopicname: UNION
+   - subtopicname: UNION ALL
+   - subtopicname: EXCEPT
+   - subtopicname: INTERSECT
+========================================================================================================================*/
+
+
+/*---------------------------------------------------------------------------------------- 
+    - subtopicname: UNION ALL
+-----------------------------------------------------------------------------------------*/
+SELECT country, region, city
+FROM HR.Employees
+UNION ALL
+SELECT country, region, city
+FROM Sales.Customers
+ORDER BY country;
+
+
+
+    /*---------------------------------------------------------------------------------------- 
+    - subtopicname: UNION
+    -----------------------------------------------------------------------------------------*/
+
+SELECT country, region, city
+FROM HR.Employees
+UNION
+SELECT country, region, city
+FROM Sales.Customers
+ORDER BY country;
+
+
+-- the same as UNION ALL + DISTINCT
+SELECT country, region, city
+FROM HR.Employees
+UNION
+SELECT N'' AS country, N'' AS region, N'' AS city
+
+
+/*---------------------------------------------------------------------------------------- 
+   - subtopicname: INTERSECT
+-----------------------------------------------------------------------------------------*/
+
+
+SELECT country, region, city
+FROM HR.Employees
+INTERSECT
+SELECT country, region, city
+FROM Sales.Customers;
+
+/*---------------------------------------------------------------------------------------- 
+   - subtopicname: EXCEPT
+-----------------------------------------------------------------------------------------*/
+
+--EXCEPT
+SELECT country, region, city
+FROM HR.Employees
+--WHERE city= 'Redmond'
+EXCEPT
+SELECT country, region, city
+FROM Sales.Customers
+--WHERE city= 'Redmond';
+
+
+--EXCEPT --compare with previous
+
+SELECT country, region, city
+FROM Sales.Customers
+EXCEPT
+SELECT country, region, city
+FROM HR.Employees;
+
+
+-- INTERSECT precedes UNION and EXCEPT, and
+--UNION and EXCEPT are considered equal
+
+
+
 
 
 /*======================================================================================================================================================
@@ -82,6 +167,29 @@ WHERE supplierid IN
         FROM Production.Suppliers
         WHERE country = N'Japan'
     );
+
+
+--Be careful with NULL
+SELECT 
+    productid,
+    productname,
+    unitprice
+FROM Production.Products
+WHERE productid IN (1, 2, NULL);
+
+--id = 1 OR id = 2 OR id = NULL
+--true or false or unknown = TRUE
+
+
+SELECT
+    productid,
+    productname,
+    unitprice
+FROM Production.Products
+WHERE productid NOT IN (1, 2, NULL);
+
+--id <> 1 AND id <> 2 AND id <> NULL
+--true and true and unknown = FALSE
 
 
 /*---------------------------------------------------------------------------------------- 
@@ -201,25 +309,33 @@ WITH EmpsCTE AS
 SELECT empid, mgrid, firstname, lastname, distance
 FROM EmpsCTE;
 
+--The same logic
+SELECT empid, mgrid, firstname, lastname, 0 AS distance
+FROM HR.Employees
+WHERE empid = 9
 
+UNION ALL
+SELECT empid, mgrid, firstname, lastname, 1 AS distance
+FROM HR.Employees
+WHERE empid = 5
+
+UNION ALL
+SELECT empid, mgrid, firstname, lastname, 2 AS distance
+FROM HR.Employees
+WHERE empid = 2
+
+UNION ALL
+SELECT empid, mgrid, firstname, lastname, 3 AS distance
+FROM HR.Employees
+WHERE empid = 1;
+
+
+--Opposite direction: from managers downto subordinates
 WITH EmpsCTE AS
 (
     SELECT empid, mgrid, firstname, lastname, 0 AS distance
     FROM HR.Employees
     WHERE empid = 1
-    --UNION ALL
-    --SELECT empid, mgrid, firstname, lastname, 1 AS distance
-    --FROM HR.Employees
-    --WHERE mgrid = 1
-    --UNION ALL
-
-    --SELECT empid, mgrid, firstname, lastname, 2 AS distance
-    --FROM HR.Employees
-    --WHERE mgrid = 2
-    --UNION ALL
-    --SELECT empid, mgrid, firstname, lastname, 3 AS distance
-    --FROM HR.Employees
-    --WHERE mgrid IN (3,5)
 
     UNION ALL
 
@@ -232,56 +348,24 @@ SELECT empid, mgrid, firstname, lastname, distance
 FROM EmpsCTE;
 
 
-/*---------------------------------------------------------------------------------------- 
-   - subtopicname: Views and Inline Table-Valued Functions
------------------------------------------------------------------------------------------*/
+SELECT empid, mgrid, firstname, lastname, 0 AS distance
+FROM HR.Employees
+WHERE empid = 1
 
-
-IF OBJECT_ID('Sales.RankedProducts', 'V') IS NOT NULL DROP VIEW Sales.RankedProducts;
-GO
-CREATE VIEW Sales.RankedProducts
-AS
-SELECT
-    ROW_NUMBER() OVER(PARTITION BY categoryid ORDER BY unitprice, productid) AS rownum,
-    categoryid,
-    productid,
-    productname,
-    unitprice
-FROM Production.Products;
-GO
-
-SELECT categoryid, productid, productname, unitprice
-FROM Sales.RankedProducts
-WHERE rownum <= 2;
-
---*************************************************************************
---function
---*************************************************************************
-IF OBJECT_ID('HR.GetManagers', 'IF') IS NOT NULL DROP FUNCTION HR.GetManagers;
-GO
-CREATE FUNCTION HR.GetManagers(@empid AS INT) RETURNS TABLE
-AS
-RETURN
-WITH EmpsCTE AS
-(
-    SELECT empid, mgrid, firstname, lastname, 0 AS distance
-    FROM HR.Employees
-    WHERE empid = @empid
-
-    UNION ALL
-
-    SELECT M.empid, M.mgrid, M.firstname, M.lastname, S.distance + 1 AS distance
-    FROM EmpsCTE AS S
-    JOIN HR.Employees AS M
-    ON S.mgrid = M.empid
-)
-SELECT empid, mgrid, firstname, lastname, distance
-FROM EmpsCTE;
-GO
---
-
-SELECT *
-FROM HR.GetManagers(5) AS M;
+UNION ALL
+SELECT empid, mgrid, firstname, lastname, 1 AS distance
+FROM HR.Employees
+WHERE mgrid = 1
+    
+UNION ALL
+SELECT empid, mgrid, firstname, lastname, 2 AS distance
+FROM HR.Employees
+WHERE mgrid = 2
+    
+UNION ALL
+SELECT empid, mgrid, firstname, lastname, 3 AS distance
+FROM HR.Employees
+WHERE mgrid IN (3,5);
 
 
 
@@ -340,75 +424,6 @@ select [MiddleName] from  [Person].[Person] order by  [MiddleName]
 
 
 
-/*========================================================================================================================
-- topicname: Using Set Operators
-  subtopics:
-   - subtopicname: UNION
-   - subtopicname: UNION ALL
-   - subtopicname: EXCEPT
-   - subtopicname: INTERSECT
-========================================================================================================================*/
-
-    /*---------------------------------------------------------------------------------------- 
-    - subtopicname: UNION
-    -----------------------------------------------------------------------------------------*/
-
-USE TSQL2012;
-SELECT country, region, city
-FROM HR.Employees
-UNION
-SELECT country, region, city
-FROM Sales.Customers
-ORDER BY country;
-
-
-/*---------------------------------------------------------------------------------------- 
-    - subtopicname: UNION ALL
------------------------------------------------------------------------------------------*/
-SELECT country As COUNTRY1, region, city
-FROM HR.Employees
-UNION ALL
-SELECT country, region, city
-FROM Sales.Customers
-ORDER BY country;
-
-/*---------------------------------------------------------------------------------------- 
-   - subtopicname: INTERSECT
------------------------------------------------------------------------------------------*/
-
-
-SELECT country, region, city
-FROM HR.Employees
-INTERSECT
-SELECT country, region, city
-FROM Sales.Customers;
-
-/*---------------------------------------------------------------------------------------- 
-   - subtopicname: EXCEPT
------------------------------------------------------------------------------------------*/
-
---EXCEPT
-SELECT country, region, city
-FROM HR.Employees
---WHERE city= 'Redmond'
-EXCEPT
-SELECT country, region, city
-FROM Sales.Customers
---WHERE city= 'Redmond';
-
-
---EXCEPT --compare with previous
-
-SELECT country, region, city
-FROM Sales.Customers
-EXCEPT
-SELECT country, region, city
-FROM HR.Employees;
-
-
--- INTERSECT precedes UNION and EXCEPT, and
---UNION and EXCEPT are considered equal
-
 
 -- any some all
 
@@ -447,11 +462,8 @@ USE TSQL2012;
 
 SELECT * FROM Sales.Orders
 
-SELECT STDEV(freight) FROM Sales.Orders
-
-SELECT COUNT(*) AS numorders
+SELECT COUNT(*) AS NumOrders, MAX(freight) AS MaxFreight, MIN(freight) AS MinFreight
 FROM Sales.Orders;
-
 
 
 SELECT * FROM Sales.Orders; 
@@ -478,7 +490,7 @@ SELECT
 FROM Sales.Orders
 WHERE shippeddate IS NOT NULL
 GROUP BY shipperid, YEAR(shippeddate)
-HAVING COUNT(*) < 100;
+HAVING COUNT(*) > 100;
 
 
 SELECT 
@@ -495,13 +507,31 @@ GROUP BY shipperid;
 --Note that the DISTINCT option is available not only to the COUNT function, but also to
 --other general set functions. However, its more common to use it with COUNT.
 
+--APPROX_COUNT_DISTINCT in MS SQL 2019
 
+SELECT
+	*
+FROM
+	[Sales].[Shippers]
+;
+
+SELECT
+	STRING_AGG([companyname], N';') AS [AllCompanies]
+FROM
+	[Sales].[Shippers]
+;
+
+SELECT
+	[value]
+FROM
+	STRING_SPLIT(N'Shipper GVSUA;Shipper ETYNR;Shipper ZHISN', N';')
+;
 
 
 -- !!!try to explain why this query is not valid?
 SELECT 
     S.shipperid,
-    S.companyname,
+    --S.companyname,
     COUNT(*) AS numorders
 FROM Sales.Shippers AS S
     JOIN Sales.Orders AS O
@@ -540,7 +570,7 @@ GROUP BY S.shipperid;
 WITH C AS
 (
     SELECT shipperid,
-                COUNT(*) AS numorders
+           COUNT(*) AS numorders
     FROM Sales.Orders
     GROUP BY shipperid
 )
@@ -565,10 +595,26 @@ FROM Sales.Orders
 GROUP BY GROUPING SETS
 (
     ( shipperid, YEAR(shippeddate) ),
-    --( shipperid ),
     ( YEAR(shippeddate) ),
     ( )
-);
+)
+;
+
+--The same logic
+SELECT shipperid, YEAR(shippeddate) AS shipyear, COUNT(*) AS numorders
+FROM Sales.Orders
+GROUP BY shipperid, YEAR(shippeddate)
+
+UNION ALL
+SELECT NULL AS shipperid, YEAR(shippeddate) AS shipyear, COUNT(*) AS numorders
+FROM Sales.Orders
+GROUP BY YEAR(shippeddate)
+
+UNION ALL
+SELECT NULL AS shipperid, NULL AS shipyear, COUNT(*) AS numorders
+FROM Sales.Orders
+
+
 
 -- CUBE
 SELECT shipperid, YEAR(shippeddate) AS shipyear, COUNT(*) AS numorders
@@ -582,22 +628,21 @@ GROUP BY CUBE( shipperid, YEAR(shippeddate) );
 
 
 --ROLLUP
---( shipcountry, shipregion, shipcity )
- --( shipcountry, shipregion )
- --( shipcountry )
- --( )
-
  -- use hierarchy
  SELECT shipcountry, shipregion, shipcity, COUNT(*) AS numorders
 FROM Sales.Orders
 GROUP BY ROLLUP( shipcountry, shipregion, shipcity )
+--( shipcountry, shipregion, shipcity )
+--( shipcountry, shipregion )
+--( shipcountry )
+--( )
 
 
 -- to make more convinient to use
 SELECT
-    shipcountry, GROUPING(shipcountry) AS grpcountry,
-    shipregion , GROUPING(shipregion) AS grpcountry,
-    shipcity , GROUPING(shipcity) AS grpcountry,
+    shipcountry,	GROUPING(shipcountry) AS grpcountry,
+    shipregion,		GROUPING(shipregion) AS grpregion,
+    shipcity,		GROUPING(shipcity) AS grpcity,
     COUNT(*) AS numorders
 FROM Sales.Orders
 GROUP BY ROLLUP( shipcountry, shipregion, shipcity );
@@ -667,159 +712,4 @@ FROM Sales.FreightTotals
 UNPIVOT( freight FOR shipperid IN([1],[2],[3]) ) AS U;
 
 IF OBJECT_ID('Sales.FreightTotals') IS NOT NULL DROP TABLE Sales.FreightTotals;
-
-/*========================================================================================================================
--- topicname: Using Window Functions
-  subtopics:
-   - subtopicname: Window Aggregate Functions
-     keywords: [FRAMES]
-   - subtopicname: Window Ranking Functions
-     keywords: [ROW_NUMBER, RANK, DENSE_RANK, NTILE]
-   - subtopicname: Window Offset Functions
-     keywords: [LAG, LEAD]
-========================================================================================================================*/
-
-/*---------------------------------------------------------------------------------------- 
-   - subtopicname: Window Aggregate Functions
------------------------------------------------------------------------------------------*/
-
-SELECT 
-    custid,
-    orderid,
-    val,
-    SUM(val) OVER(PARTITION BY custid) AS custtotal,
-    SUM(val) OVER() AS grandtotal
-FROM Sales.OrderValues;
-
-SELECT custid, orderid,
-    val,
-    CAST(100.0 * val / SUM(val) OVER(PARTITION BY custid) AS NUMERIC(5, 2)) AS pctcust,
-    CAST(100.0 * val / SUM(val) OVER() AS NUMERIC(5, 2)) AS pcttotal
-FROM Sales.OrderValues;
-
--- frame
-SELECT 
-    custid,
-    orderid,
-    orderdate,
-    val,
-    SUM(val) OVER
-    (
-    PARTITION BY custid ORDER BY orderdate,	 orderid
-        ROWS BETWEEN UNBOUNDED PRECEDING
-    AND CURRENT ROW
-    ) AS runningtotal
-FROM Sales.OrderValues;
-
---
-WITH RunningTotals AS
-(
-    SELECT 
-        custid,
-        orderid,
-        orderdate, 
-        val,
-        SUM(val) OVER(PARTITION BY custid 	ORDER BY orderdate, orderid
-                        ROWS BETWEEN UNBOUNDED PRECEDING
-                        AND CURRENT ROW) 
-        AS runningtotal
-    FROM Sales.OrderValues
-)
-SELECT *
-FROM RunningTotals
-WHERE runningtotal < 1000.00;
-
---ROWS BETWEEN 2 PRECEDING AND CURRENT ROW.
-
-
-/*---------------------------------------------------------------------------------------- 
-   - subtopicname: Window Ranking Functions
------------------------------------------------------------------------------------------*/
---RANKING Function
-
-SELECT custid, orderid, val,
-    ROW_NUMBER() OVER(ORDER BY val) AS rownum,
-    RANK() OVER(ORDER BY val) AS rnk,
-    DENSE_RANK() OVER(ORDER BY val) AS densernk,
-    NTILE(100) OVER(ORDER BY val) AS ntile100
-FROM Sales.OrderValues;
-
-
-/*---------------------------------------------------------------------------------------- 
-   - subtopicname: Window Offset Functions
------------------------------------------------------------------------------------------*/
-
-SELECT 
-    custid,
-    orderid,
-    orderdate,
-    val,
-    LAG(val,2,0) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS prev_val,
-    LEAD(val,2,0) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS next_val
-FROM Sales.OrderValues;
-
-SELECT 
-    custid,
-    orderid,
-    orderdate,
-    val,
-    val - LAG(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffprev
-    --val - LEAD(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffnext
-FROM Sales.OrderValues;
-
-
-SELECT 
-    custid,
-    orderid,
-    orderdate,
-    val,
-    --val - LAG(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffprev,
-    val - LEAD(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffnext
-FROM Sales.OrderValues;
-
-
-SELECT 
-    custid,
-    orderid,
-    orderdate,
-    val,
-    FIRST_VALUE(val) 
-            OVER
-                (
-                    PARTITION BY custid ORDER BY orderdate, orderid
-                    ROWS BETWEEN UNBOUNDED PRECEDING
-                    AND CURRENT ROW
-                ) AS first_val,
-    LAST_VALUE(val) 
-            OVER
-                (
-                    PARTITION BY custid ORDER BY orderdate, orderid
-                    ROWS BETWEEN CURRENT ROW
-                    AND UNBOUNDED FOLLOWING
-                ) AS last_val
-FROM Sales.OrderValues;
-
-
-
---Query to produce test data
-
-
-DECLARE @low AS BIGINT
-DECLARE @high AS BIGINT
-SET @low=1;
-SET @high=1000000;
-
-WITH
-L0 AS (SELECT c FROM (VALUES(1),(1)) AS D(c)),
-L1 AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),
-L2 AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),
-L3 AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),
-L4 AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),
-L5 AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),
-Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS rownum
-FROM L5)
-SELECT @low + rownum - 1 AS n
-FROM Nums
-ORDER BY rownum
-OFFSET 0 ROWS FETCH FIRST @high - @low + 1 ROWS ONLY;
 
