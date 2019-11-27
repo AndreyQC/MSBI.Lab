@@ -49,23 +49,37 @@ SELECT
     SUM(val) OVER() AS grandtotal
 FROM Sales.OrderValues;
 
+
 SELECT custid, orderid,
     val,
-    CAST(100.0 * val / SUM(val) OVER(PARTITION BY custid) AS NUMERIC(5, 2)) AS pctcust,
-    CAST(100.0 * val / SUM(val) OVER() AS NUMERIC(5, 2)) AS pcttotal
+    CAST(
+			100.0 * val / SUM(val) OVER(PARTITION BY custid)
+		AS NUMERIC(5, 2))	AS pctcust,
+    CAST(
+			100.0 * val / SUM(val) OVER()
+		AS NUMERIC(5, 2))	AS pcttotal
 FROM Sales.OrderValues;
 
--- frame
+--Running total
+SELECT 
+    custid,
+    orderid,
+	orderdate,
+    val,
+    SUM(val) OVER(PARTITION BY custid	ORDER BY orderdate, orderid) AS runningtotal,
+	SUM(val) OVER(PARTITION BY custid) AS custtotal
+FROM Sales.OrderValues;
+
+
+--Running total with frame
 SELECT 
     custid,
     orderid,
     orderdate,
     val,
-    SUM(val) OVER
-    (
-    PARTITION BY custid ORDER BY orderdate,	 orderid
-        ROWS BETWEEN UNBOUNDED PRECEDING
-    AND CURRENT ROW
+    SUM(val) OVER(
+		PARTITION BY custid		ORDER BY orderdate,	 orderid
+        ROWS BETWEEN	UNBOUNDED PRECEDING    AND CURRENT ROW
     ) AS runningtotal
 FROM Sales.OrderValues;
 
@@ -85,9 +99,11 @@ WITH RunningTotals AS
 )
 SELECT *
 FROM RunningTotals
-WHERE runningtotal < 1000.00;
+WHERE runningtotal > 10000.00;
 
---ROWS BETWEEN 2 PRECEDING AND CURRENT ROW.
+
+
+
 
 
 /*---------------------------------------------------------------------------------------- 
@@ -103,6 +119,50 @@ SELECT custid, orderid, val,
 FROM Sales.OrderValues;
 
 
+--Count Distinct
+SELECT COUNT(DISTINCT orderdate) AS dcount FROM Sales.OrderValues;
+
+
+WITH RankedDates AS(
+	SELECT
+		custid,
+		orderid,
+		orderdate,
+		ROW_NUMBER() OVER(PARTITION BY orderdate ORDER BY (SELECT 1)) AS rnum
+	FROM Sales.OrderValues
+)
+SELECT
+	custid,
+	orderid,
+	orderdate,
+	SUM(CASE WHEN rnum = 1	THEN 1	ELSE 0	END) OVER() AS dcount
+FROM
+	RankedDates;
+
+
+
+--Query to produce test data
+
+DECLARE @low AS BIGINT
+DECLARE @high AS BIGINT
+SET @low=1;
+SET @high=100000;
+
+WITH
+L0 AS (SELECT c FROM (VALUES(1),(1)) AS D(c)),			--2
+L1 AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),	--4
+L2 AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),	--16
+L3 AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),	--256
+L4 AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),	--65 536
+L5 AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),	--4 294 967 296
+Nums AS (
+	SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS rownum FROM L5
+)
+SELECT @low + rownum - 1 AS n
+FROM Nums
+ORDER BY rownum
+OFFSET 0 ROWS FETCH FIRST @high - @low + 1 ROWS ONLY;
+
 /*---------------------------------------------------------------------------------------- 
    - subtopicname: Window Offset Functions
 -----------------------------------------------------------------------------------------*/
@@ -112,8 +172,17 @@ SELECT
     orderid,
     orderdate,
     val,
-    LAG(val,2,0) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS prev_val,
-    LEAD(val,2,0) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS next_val
+    LEAD(val,2) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS next_val,
+    LAG(val,2) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS prev_val
+FROM Sales.OrderValues;
+
+SELECT 
+    custid,
+    orderid,
+    orderdate,
+    val,
+    LEAD(val,2,0) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS next_val,
+    LAG(val,2,0) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS prev_val
 FROM Sales.OrderValues;
 
 SELECT 
@@ -155,30 +224,11 @@ SELECT
                     ROWS BETWEEN CURRENT ROW
                     AND UNBOUNDED FOLLOWING
                 ) AS last_val
-FROM Sales.OrderValues;
+FROM Sales.OrderValues
+ORDER BY custid, orderdate, orderid;
 
 
---Query to produce test data
 
-
-DECLARE @low AS BIGINT
-DECLARE @high AS BIGINT
-SET @low=1;
-SET @high=1000000;
-
-WITH
-L0 AS (SELECT c FROM (VALUES(1),(1)) AS D(c)),
-L1 AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),
-L2 AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),
-L3 AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),
-L4 AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),
-L5 AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),
-Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS rownum
-FROM L5)
-SELECT @low + rownum - 1 AS n
-FROM Nums
-ORDER BY rownum
-OFFSET 0 ROWS FETCH FIRST @high - @low + 1 ROWS ONLY;
 
 
 /*========================================================================================================================
@@ -230,30 +280,15 @@ FROM Sales.OrderDetails;
 CREATE TABLE Sales.OrderDetails
 (
     orderid INT NOT NULL,
+	unitprice money NOT NULL,
+	qty smallint NOT NULL,
     initialcost AS unitprice * qty -- computed column
+	--initialcost AS unitprice * qty PERSISTED
 );
 
 ALTER TABLE Sales.OrderDetails
 ADD initialcost AS unitprice * qty
 
-USE [TSQL2012]
-GO
-
-INSERT INTO [Sales].[OrderDetails]
-           ([orderid]
-           ,[productid]
-           ,[unitprice]
-           ,[qty]
-           ,[discount]
-		   ,[initialcost])
-     VALUES
-           (10252
-           ,56
-           ,10
-           ,11
-           ,0.002,
-		   3)
-GO
 
 
 /*---------------------------------------------------------------------------------------- 
@@ -276,6 +311,10 @@ REBUILD WITH (DATA_COMPRESSION = PAGE);
 
 USE TSQL2012;
 GO
+
+DROP TABLE IF EXISTS Production.CategoriesTest;
+GO
+
 CREATE TABLE Production.CategoriesTest
 (
 categoryid INT NOT NULL IDENTITY
@@ -329,33 +368,22 @@ GO
 /*---------------------------------------------------------------------------------------- 
    - subtopicname: Primary Key Constraints
 -----------------------------------------------------------------------------------------*/
+DROP TABLE IF EXISTS Production.CategoriesTest3;
+GO
+
 CREATE TABLE Production.CategoriesTest3
 (
     categoryid INT NOT NULL IDENTITY,
     categoryname NVARCHAR(15) NOT NULL,
     description NVARCHAR(200) NOT NULL,
-    CONSTRAINT PK_CategoriesTEst3 PRIMARY KEY(categoryid)
+    CONSTRAINT PK_CategoriesTest3 PRIMARY KEY(categoryid)
 );
 
-
-
-INSERT INTO [Production].[CategoriesTest3]
-           ([categoryname]
-           ,[description])
-     VALUES
-           ('testa'
-           ,'tet')
-		   
-		   
 SET IDENTITY_INSERT [Production].[CategoriesTest3] ON;
 INSERT INTO [Production].[CategoriesTest3]
-           ([categoryid]
-		   ,[categoryname]
-           ,[description])
+           ([categoryid],[categoryname],[description])
      VALUES
-           (
-		   1,'testa'
-           ,'tet')
+           (1,'testa','tet')
 SET IDENTITY_INSERT [Production].[CategoriesTest3] OFF;
 
 
@@ -363,6 +391,32 @@ SET IDENTITY_INSERT [Production].[CategoriesTest3] OFF;
 ALTER TABLE Production.Categories
 ADD CONSTRAINT PK_Categories PRIMARY KEY(categoryid);
 GO
+
+
+DROP TABLE IF EXISTS Production.CategoriesTest3;
+GO
+
+
+--PK is not only over clustered index. Clustered index is not only unique
+DROP TABLE IF EXISTS Production.CategoriesTest4;
+GO
+
+CREATE TABLE Production.CategoriesTest4
+(
+    categoryid INT NOT NULL IDENTITY,
+    categoryname NVARCHAR(15) NOT NULL,
+    description NVARCHAR(200) NOT NULL,
+    CONSTRAINT PK_CategoriesTest4 PRIMARY KEY NONCLUSTERED(categoryid)
+);
+GO
+
+CREATE CLUSTERED INDEX [CI_Production_CategoriesTest4]	--Non unique!
+	ON [Production].[CategoriesTest4] ([categoryname]);
+GO
+
+DROP TABLE IF EXISTS Production.CategoriesTest4;
+GO
+
 
 -- get list of constraint
 SELECT *
@@ -432,9 +486,9 @@ CREATE TABLE Production.Products
     supplierid INT NOT NULL,
     categoryid INT NOT NULL,
     unitprice MONEY NOT NULL 
-    CONSTRAINT DFT_Products_unitprice DEFAULT(0),
+    CONSTRAINT DF_Products_unitprice DEFAULT(0),
     discontinued BIT NOT NULL
-    CONSTRAINT DFT_Products_discontinued DEFAULT(0),
+    CONSTRAINT DF_Products_discontinued DEFAULT(0),
 );
 
 SELECT *
