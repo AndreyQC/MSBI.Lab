@@ -1,0 +1,25 @@
+---
+topics:
+topicname: Designing and Implementing Views
+subtopics:
+- subtopicname: Views
+- topicname: Implementing User-Defined Functions
+subtopics:
+- subtopicname: Scalar UDFs
+- subtopicname: Inline Table-Valued UDF
+- subtopicname: Multistatement Table-Valued UDF
+- subtopicname: Limitations on UDFs
+- topicname: Using Synonyms
+subtopics:
+- subtopicname: Creating a Synonym
+- topicname: Hierarchies
+subtopics:
+- subtopicname: Adjacency List Model
+- subtopicname: Nested Set Model of Hierarchies
+- subtopicname: HierarchyID
+- topicname: Introduction in Power BI
+- topicname: Team work with GIT
+subtopics:
+- subtopicname: Git branching model
+- subtopicname: Workflow with branches and Pull Requests 
+---
