@@ -202,10 +202,10 @@ Inline Table-Valued UDF
 
 =========================================*/
 
-IF OBJECT_ID('Sales.fn_FilteredExtension', 'IF') IS NOT NULL
-DROP FUNCTION Sales.fn_FilteredExtension;
+IF OBJECT_ID('Sales.fn_FilteredExtensionIF', 'IF') IS NOT NULL
+DROP FUNCTION Sales.fn_FilteredExtensionIF;
 GO
-CREATE FUNCTION Sales.fn_FilteredExtension
+CREATE FUNCTION Sales.fn_FilteredExtensionIF
 (
      @lowqty AS SMALLINT,
      @highqty AS SMALLINT
@@ -221,15 +221,15 @@ GO
 -- calling
 
 SELECT orderid, unitprice, qty
-FROM Sales.fn_FilteredExtension (10,20);
+FROM Sales.fn_FilteredExtensionIF (10,20);
 /*====================================================================================================================================================
 Multistatement Table-Valued UDF
 
 =========================================*/
-IF OBJECT_ID('Sales.fn_FilteredExtension2', 'TF') IS NOT NULL
-DROP FUNCTION Sales.fn_FilteredExtension2;
+IF OBJECT_ID('Sales.fn_FilteredExtensionTF', 'TF') IS NOT NULL
+DROP FUNCTION Sales.fn_FilteredExtensionTF;
 GO
-CREATE FUNCTION Sales.fn_FilteredExtension2
+CREATE FUNCTION Sales.fn_FilteredExtensionTF
 (
      @lowqty AS SMALLINT,
      @highqty AS SMALLINT
@@ -258,10 +258,10 @@ GO
 SET STATISTICS TIME ON;
 
 SELECT orderid, unitprice, qty
-FROM Sales.fn_FilteredExtension (10,20);
+FROM Sales.fn_FilteredExtensionIF (10,20);
 
 SELECT orderid, unitprice, qty
-FROM Sales.fn_FilteredExtension2 (10,20);
+FROM Sales.fn_FilteredExtensionTF (10,20);
 
 SET STATISTICS TIME OFF;
 
@@ -269,13 +269,15 @@ SET STATISTICS TIME OFF;
 ALTER DATABASE [TSQL2012] SET COMPATIBILITY_LEVEL = 140;
 GO
 
+DBCC FREEPROCCACHE;
+
 SET STATISTICS TIME ON;
 
 SELECT orderid, unitprice, qty
-FROM Sales.fn_FilteredExtension (10,20);
+FROM Sales.fn_FilteredExtensionIF (10,20);
 
 SELECT orderid, unitprice, qty
-FROM Sales.fn_FilteredExtension2 (10,20);
+FROM Sales.fn_FilteredExtensionTF (10,20);
 
 SET STATISTICS TIME OFF;
 
