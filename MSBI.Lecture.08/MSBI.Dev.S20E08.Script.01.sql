@@ -1,5 +1,5 @@
 /*=========================================
-MSBI.DEV.COURSE.S18E08.SCRIPT
+MSBI.DEV.COURSE.S20E08.SCRIPT
 =========================================*/
 
 
@@ -19,10 +19,9 @@ IF OBJECT_ID('Sales.MyOrders', 'U') IS NOT NULL
 DROP TABLE  Sales.MyOrders;
 go
 
-----------------create table---------------------------
-USE TSQL2012;
-IF OBJECT_ID('Sales.MyOrders') IS NOT NULL DROP TABLE Sales.MyOrders;
+DROP TABLE IF EXISTS Sales.MyOrders;
 GO
+----------------create table---------------------------
 CREATE TABLE Sales.MyOrders
 (
 	orderid INT NOT NULL IDENTITY(1, 1)
@@ -34,14 +33,6 @@ CREATE TABLE Sales.MyOrders
 	shipcountry NVARCHAR(15) NOT NULL,
 	freight MONEY NOT NULL
 );
-
-PRINT SYSDATETIME();
-PRINT GETDATE();
-PRINT GETUTCDATE();
--- pay attention
-SELECT GETDATE() AS fn_GetDate, SYSDATETIME() AS fn_SYSDATETIME
---DATETIME and the other DATETIME2
-
 
 SELECT * FROM Sales.MyOrders;
 
@@ -59,10 +50,12 @@ INSERT
     (orderid, custid, empid, orderdate, shipcountry, freight)
 VALUES  (2, 2, 19, '20120620', N'USA', 30.00);
 
+SET IDENTITY_INSERT Sales.MyOrders ON;
 INSERT 
     INTO Sales.MyOrders
-    (custid, empid, orderdate, shipcountry, freight)
-VALUES  (2, 19, '20120620', N'USA', 30.00);
+    (orderid, custid, empid, orderdate, shipcountry, freight)
+VALUES  (2, 2, 19, '20120620', N'USA', 30.00);
+SET IDENTITY_INSERT Sales.MyOrders OFF;
 /*=========================================
 INSERT VALUES Server uses the default expression for orderdate
 =========================================*/
@@ -73,12 +66,11 @@ VALUES(3, 11, N'USA', 10.00);
 INSERT INTO Sales.MyOrders(custid, empid, orderdate, shipcountry, freight)
 VALUES(3, 17, DEFAULT, N'RUS', 30.00);
 
+SELECT * FROM Sales.MyOrders;
 
 /*=========================================
 The INSERT VALUES with multiple rows
 =========================================*/
-BEGIN TRAN
- 
 INSERT 
     INTO Sales.MyOrders (custid, empid, orderdate, shipcountry, freight)
  VALUES
@@ -86,8 +78,6 @@ INSERT
     (5, 13, '20120620', N'USA', 40.00),
     (7, 17, '20120620', N'USA', 45.00);
 
-
-ROLLBACK
 /*=========================================
 review result
 =========================================*/
@@ -110,6 +100,10 @@ SET IDENTITY_INSERT Sales.MyOrders OFF;
 
 SELECT *
 FROM Sales.MyOrders;
+
+
+INSERT INTO Sales.MyOrders(custid, empid, shipcountry, freight)
+VALUES(3, 11, N'USA', 10.00);
 /*=========================================
 
 =========================================*/
@@ -137,13 +131,28 @@ AS
     WHERE shipcountry = @country;
 GO
 
+EXEC Sales.usp_OrdersForCountry N'Portugal';
+
+
+SET IDENTITY_INSERT Sales.MyOrders ON;
+
+INSERT 
+	INTO Sales.MyOrders(orderid, custid, empid, orderdate, shipcountry, freight)
+EXEC Sales.usp_OrdersForCountry
+		@country = N'Portugal';
+
+SET IDENTITY_INSERT Sales.MyOrders OFF;
+
+
+SELECT *
+FROM Sales.MyOrders;
+
+
+GO
 /*=========================================
  wrong SP create SP
 =========================================*/
-IF OBJECT_ID('Sales.usp_OrdersForCountry', 'P') IS NOT NULL
-DROP PROC Sales.usp_OrdersForCountry;
-GO
-CREATE PROC Sales.usp_OrdersForCountry
+CREATE OR ALTER PROC Sales.usp_OrdersForCountry
 @country AS NVARCHAR(15)
 AS
     SELECT  'sdsd' col12, orderid, custid, empid, orderdate, shipcountry, freight
@@ -154,29 +163,24 @@ GO
 
 =========================================*/
 
-SET IDENTITY_INSERT Sales.MyOrders ON;
-
 EXEC Sales.usp_OrdersForCountry N'Portugal';
+
+
+SET IDENTITY_INSERT Sales.MyOrders ON;
 
 INSERT 
 	INTO Sales.MyOrders(orderid, custid, empid, orderdate, shipcountry, freight)
 EXEC Sales.usp_OrdersForCountry
 		@country = N'Portugal';
 
-
 SET IDENTITY_INSERT Sales.MyOrders OFF;
-
-
-SELECT *
-FROM Sales.MyOrders;
-
 
 
 --**************************************************************************************************************
 --SELECT INTO
 --**************************************************************************************************************
 
-IF OBJECT_ID('Sales.MyOrders', 'U') IS NOT NULL DROP TABLE Sales.MyOrders;
+DROP TABLE IF EXISTS Sales.MyOrders;
 
 SELECT 
     orderid,
@@ -197,18 +201,29 @@ to control datatypes in created table
 
 IF OBJECT_ID('Sales.MyOrders', 'U') IS NOT NULL DROP TABLE Sales.MyOrders;
 
-
 SELECT
-    ISNULL(orderid + 0, -1) AS orderid, -- get rid of IDENTITY property
--- make column NOT NULL
-    ISNULL(custid, -1) AS custid, -- make column NOT NULL
+    orderid + 0 AS orderid,					-- get rid of IDENTITY property
+    ISNULL(custid, -1) AS custid,			-- make column NOT NULL
     empid,
-    ISNULL(CAST(orderdate AS DATE), '19000101') AS orderdate,
+    CAST(orderdate AS DATE) AS orderdate,	-- change data type
     shipcountry, freight
 INTO Sales.MyOrders
 FROM Sales.Orders
 WHERE shipcountry = N'Norway';
 
+
+
+IF OBJECT_ID('Sales.MyOrders', 'U') IS NOT NULL DROP TABLE Sales.MyOrders;
+
+SELECT
+    ISNULL(orderid + 0, -1) AS orderid, -- get rid of IDENTITY property
+    ISNULL(custid, -1) AS custid, -- make column NOT NULL
+    empid,
+    ISNULL(CAST(orderdate AS DATE), '19000101') AS orderdate, -- change data type
+    shipcountry, freight
+INTO Sales.MyOrders
+FROM Sales.Orders
+WHERE shipcountry = N'Norway';
 
 /*=========================================
 add constraint if it needs
@@ -318,7 +333,6 @@ FROM Sales.MyCustomers AS C
          ON O.orderid = OD.orderid
 WHERE C.country = N'Norway';
 
--- roll back
 
 -- experiment
 
@@ -341,6 +355,7 @@ FROM Sales.MyCustomers AS C
 WHERE C.country = N'Norway';
 
 
+-- roll back
 
 UPDATE OD
 SET OD.discount -= 0.05
@@ -448,29 +463,19 @@ FROM (
 	) AS D;
 
 
-	--UPDATE statements based on joins:
+--Prevent redundant update
 UPDATE TGT
-SET TGT.country		=	SRC.country,
-	TGT.postalcode	 =	SRC.postalcode
-FROM Sales.MyCustomers AS TGT
-	INNER JOIN Sales.Customers AS SRC
-		ON TGT.custid = SRC.custid;
-
-UPDATE Sales.MyCustomers
-	SET		
-			MyCustomers.country = SRC.country,
-			MyCustomers.postalcode = SRC.postalcode
-FROM Sales.Customers AS SRC
-	WHERE MyCustomers.custid = SRC.custid;
-
---This code is equivalent to the following use of an explicit cross join with a filter.
-UPDATE TGT
-	SET 
-		TGT.country = SRC.country,
+	SET TGT.country = SRC.country,
 		TGT.postalcode = SRC.postalcode
 FROM Sales.MyCustomers AS TGT
-	CROSS JOIN Sales.Customers AS SRC
-WHERE TGT.custid = SRC.custid;
+	INNER JOIN Sales.Customers AS SRC
+		ON TGT.custid = SRC.custid
+WHERE
+	TGT.country <> SRC.country
+	OR TGT.postalcode <> SRC.postalcode
+	--OR (TGT.postalcode IS NULL		AND SRC.postalcode IS NOT NULL)
+	--OR (TGT.postalcode IS NOT NULL	AND SRC.postalcode IS NULL)
+;
 
 /*=========================================
 --UPDATE Based on a Variable
@@ -561,13 +566,13 @@ ADD CONSTRAINT PK_MyOrderDetails PRIMARY KEY(orderid, productid);
 
 =========================================*/
 SELECT * FROM Sales.MyOrderDetails
-WHERE productid = 10;
+WHERE productid = 11;
 
 DELETE FROM Sales.MyOrderDetails
 WHERE productid = 11;
 
 SELECT * FROM Sales.MyOrderDetails
-WHERE productid = 12;
+WHERE productid = 11;
 
 /*=========================================
 delete is very log expensive command
@@ -589,9 +594,9 @@ DELETE Based on a Join
 SELECT *  FROM Sales.MyOrders;
 --(830 rows affected)
 --(708 rows affected)
+
+
 BEGIN TRAN
-
-
 
 DELETE FROM O
 FROM Sales.MyOrders AS O
@@ -600,6 +605,7 @@ FROM Sales.MyOrders AS O
 WHERE C.country = N'USA';
 
 ROLLBACK
+
 
 -- another version
 DELETE FROM Sales.MyOrders
@@ -669,8 +675,6 @@ VALUES
 
 SELECT * FROM Sales.MyOrders;
 
-DELETE FROM Sales.MyOrders;
-
 /*=========================================
 how to get identity value
 =========================================*/
@@ -679,6 +683,8 @@ SCOPE_IDENTITY() AS SCOPE_IDENTITY,
 @@IDENTITY AS [@@IDENTITY],
 IDENT_CURRENT('Sales.MyOrders') AS IDENT_CURRENT;
 
+--Check identity value after delete
+DELETE FROM Sales.MyOrders;
 go
 
 TRUNCATE TABLE Sales.MyOrders;
@@ -800,10 +806,6 @@ Merging Data
 /*=========================================
 Prepare data
 =========================================*/
-
-TRUNCATE TABLE Sales.MyOrders;
-ALTER SEQUENCE Sales.SeqOrderIDs RESTART WITH 1;
-
 IF OBJECT_ID('Sales.MyOrders') IS NOT NULL DROP TABLE Sales.MyOrders;
 IF OBJECT_ID('Sales.SeqOrderIDs') IS NOT NULL DROP SEQUENCE Sales.SeqOrderIDs;
 CREATE SEQUENCE Sales.SeqOrderIDs AS INT
@@ -822,26 +824,6 @@ CREATE TABLE Sales.MyOrders
 	orderdate DATE NOT NULL
 );
 
-
---DECLARE
---	@orderid AS INT = 1,
---	@custid AS INT = 1,
---	@empid AS INT = 2,
---	@orderdate AS DATE = '20120620';
---SELECT *
---FROM (SELECT @orderid, @custid, @empid, @orderdate )
---AS SRC( orderid, custid, empid, orderdate );
-
-
---DECLARE
---	@orderid AS INT = 1,
---	@custid AS INT = 1,
---	@empid AS INT = 2,
---	@orderdate AS DATE = '20120620';
---SELECT *
---FROM (VALUES(@orderid, @custid, @empid, @orderdate))
---AS SRC( orderid, custid, empid, orderdate);
-
 DECLARE
 	@orderid AS INT = 1,
 	@custid AS INT = 1,
@@ -859,6 +841,9 @@ WHEN MATCHED THEN UPDATE
 WHEN NOT MATCHED THEN INSERT
 VALUES(SRC.orderid, SRC.custid, SRC.empid, SRC.orderdate);
 
+SELECT * FROM Sales.MyOrders;
+
+GO
 -- to prevent redundant update
 DECLARE
 	@orderid AS INT = 1,
@@ -883,7 +868,7 @@ WHEN NOT MATCHED
 
 -- remember about NULL
 /*
-TGT.custid = SRC.custid OR (TGT.custid IS NULL AND SRC.custid IS NOT
+TGT.custid <> SRC.custid OR (TGT.custid IS NULL AND SRC.custid IS NOT
 NULL) OR (TGT.custid IS NOT NULL AND SRC.custid IS NULL).
 */
 
@@ -919,7 +904,7 @@ WHEN NOT MATCHED
 	BY SOURCE THEN
 	DELETE;
 
-
+SELECT * FROM Sales.MyOrders;
 /*=========================================
 Working with the OUTPUT Clause
 
@@ -929,6 +914,7 @@ Working with the OUTPUT Clause
 prepare data
 */
 IF OBJECT_ID('Sales.MyOrders') IS NOT NULL DROP TABLE Sales.MyOrders;
+IF OBJECT_ID('Sales.MyOrders2') IS NOT NULL DROP TABLE Sales.MyOrders2;
 IF OBJECT_ID('Sales.SeqOrderIDs') IS NOT NULL DROP SEQUENCE Sales.SeqOrderIDs;
 CREATE SEQUENCE Sales.SeqOrderIDs AS INT
 MINVALUE 1
@@ -946,32 +932,7 @@ CREATE TABLE Sales.MyOrders
 	orderdate DATE NOT NULL
 );
 
-/*=========================================
-Working with the OUTPUT Clause
-
-=========================================*/
-
-TRUNCATE TABLE Sales.MyOrders;
-ALTER SEQUENCE Sales.SeqOrderIDs RESTART WITH 1;
---If the table and sequence dont exist in the database, use the following code to create
---them.
-IF OBJECT_ID('Sales.MyOrders') IS NOT NULL DROP TABLE Sales.MyOrders;
-IF OBJECT_ID('Sales.SeqOrderIDs') IS NOT NULL DROP SEQUENCE Sales.SeqOrderIDs;
-CREATE SEQUENCE Sales.SeqOrderIDs AS INT
-MINVALUE 1
-CYCLE;
-CREATE TABLE Sales.MyOrders
-(
-	orderid INT NOT NULL
-	CONSTRAINT PK_MyOrders_orderid PRIMARY KEY
-	CONSTRAINT DFT_MyOrders_orderid
-	DEFAULT(NEXT VALUE FOR Sales.SeqOrderIDs),
-	custid INT NOT NULL
-	CONSTRAINT CHK_MyOrders_custid CHECK(custid > 0),
-	empid INT NOT NULL
-	CONSTRAINT CHK_MyOrders_empid CHECK(empid > 0),
-	orderdate DATE NOT NULL
-);
+SELECT * INTO Sales.MyOrders2 FROM Sales.MyOrders;
 
 --INSERT with OUTPUT
 
@@ -987,15 +948,32 @@ WHERE shipcountry = N'Norway';
 INSERT INTO Sales.MyOrders(custid, empid, orderdate)
 OUTPUT
 	inserted.orderid, inserted.custid, inserted.empid, inserted.orderdate
-INTO Sametableq(orderid, custid, empid, orderdate)
+INTO Sales.MyOrders2(orderid, custid, empid, orderdate)
 SELECT custid, empid, orderdate
 FROM Sales.Orders
 WHERE shipcountry = N'Norway';
 
+SELECT * FROM Sales.MyOrders2;
+
+INSERT INTO
+	Sales.MyOrders2(orderid, custid, empid, orderdate)
+SELECT
+	orderid, custid, empid, orderdate
+FROM 
+(
+	INSERT INTO Sales.MyOrders(custid, empid, orderdate)
+		OUTPUT
+		inserted.orderid, inserted.custid, inserted.empid, inserted.orderdate
+	SELECT custid, empid, orderdate
+	FROM Sales.Orders
+	WHERE shipcountry = N'Norway'
+) AS ins;
+
+--Clean up
+DROP TABLE IF EXISTS Sales.MyOrders2;
+GO
 
 ---DELETE with OUTPUT
-
-
 DELETE FROM Sales.MyOrders
 OUTPUT deleted.orderid
 WHERE empid = 1;
@@ -1006,9 +984,9 @@ WHERE empid = 1;
 UPDATE Sales.MyOrders
 SET orderdate = DATEADD(day, 1, orderdate)
 OUTPUT
-inserted.orderid,
-deleted.orderdate AS old_orderdate,
-inserted.orderdate AS neworderdate
+	inserted.orderid,
+	deleted.orderdate AS old_orderdate,
+	inserted.orderdate AS neworderdate
 WHERE empid = 7;
 
 
@@ -1017,8 +995,8 @@ WHERE empid = 7;
 
 MERGE INTO Sales.MyOrders AS TGT
 USING (VALUES(1, 70, 1, '20061218'),
-			(2, 70, 7, '20070429'),
-			(3, 70, 7, '20070820'),
+			(2, 50, 7, '20070429'),
+			(3, 50, 7, '20070820'),
 			(4, 70, 3, '20080114'),
 			(5, 70, 1, '20080226'),
 			(6, 70, 2, '20080410'))
@@ -1038,6 +1016,8 @@ WHEN NOT MATCHED BY SOURCE THEN
 DELETE
 OUTPUT
 $action AS the_action,
+inserted.custid AS inserted_custid,
+deleted.custid AS deleted_custid,
 COALESCE(inserted.orderid, deleted.orderid) AS orderid;
 
 
@@ -1084,3 +1064,57 @@ FROM
 WHERE the_action = 'UPDATE';
 SELECT *
 FROM @InsertedOrders;
+
+
+--OUTPUT option with FROM clause
+UPDATE o
+SET orderdate = DATEADD(day, 1, o.orderdate)
+OUTPUT
+	inserted.orderdate,
+	emp.firstname,
+	emp.lastname
+FROM Sales.MyOrders AS o
+    INNER JOIN HR.Employees AS emp
+        ON O.empid = emp.empid
+WHERE emp.lastname = N'Davis';
+
+DELETE o
+OUTPUT
+	deleted.orderid,
+	emp.firstname,
+	emp.lastname
+FROM Sales.MyOrders AS o
+    INNER JOIN HR.Employees AS emp
+        ON O.empid = emp.empid
+WHERE emp.lastname = N'Davis';
+
+--Doesn't work with INSERT
+INSERT INTO Sales.MyOrders(custid, empid, orderdate)
+	OUTPUT
+	inserted.orderid, emp.firstname, emp.lastname
+SELECT o.custid, o.empid, o.orderdate
+FROM Sales.Orders AS o
+    INNER JOIN HR.Employees AS emp
+        ON O.empid = emp.empid
+WHERE emp.lastname = N'Davis';
+
+--Workaround
+MERGE
+	Sales.MyOrders AS dst
+USING (
+	SELECT o.custid, o.empid, o.orderdate, emp.firstname, emp.lastname
+	FROM Sales.Orders AS o
+		INNER JOIN HR.Employees AS emp
+			ON O.empid = emp.empid
+	WHERE emp.lastname = N'Davis'
+) AS src
+ON 1 = 0	--fake condition
+WHEN NOT MATCHED THEN
+	INSERT (custid, empid, orderdate)
+	VALUES (src.custid, src.empid, src.orderdate)
+OUTPUT
+	inserted.orderid, src.firstname, src.lastname
+;
+
+--Clean up
+DROP TABLE IF EXISTS Sales.MyOrders;
