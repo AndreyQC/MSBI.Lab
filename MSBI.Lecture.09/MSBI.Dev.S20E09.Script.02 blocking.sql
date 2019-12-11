@@ -1,5 +1,5 @@
 /*=========================================
-MSBI.DEV.COURSE.S18E09.SCRIPT
+MSBI.DEV.COURSE.S20E09.SCRIPT
 =========================================*/
 
 
@@ -81,6 +81,8 @@ FROM HR.Employees;
 SELECT empid, lastname, firstname
 FROM HR.Employees WITH (READUNCOMMITTED);
 
+SELECT empid, lastname, firstname
+FROM HR.Employees WITH (NOLOCK);
 
 /*=========================================
 REPEATABLE READ
@@ -88,9 +90,11 @@ REPEATABLE READ
 SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
 BEGIN TRAN;
+--1------------------------------------------------------------
 SELECT empid, lastname, firstname, postalcode
 FROM HR.Employees;
-
+--2------------------------------------------------------------
+--3------------------------------------------------------------
 COMMIT TRAN;
 
 
@@ -120,14 +124,6 @@ SET postalcode = N'10003'
 WHERE empid = 1;
 
 
-/*=========================================
-READ UNCOMMITTED
-=========================================*/
 
 
---1------------------------------------------------------------
---2------------------------------------------------------------
---3------------------------------------------------------------
---4------------------------------------------------------------
---5------------------------------------------------------------
---6------------------------------------------------------------
+ALTER DATABASE TSQL2012 SET READ_COMMITTED_SNAPSHOT OFF;

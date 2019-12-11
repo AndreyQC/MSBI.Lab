@@ -1,5 +1,5 @@
 /*=========================================
-MSBI.DEV.COURSE.S18E09.SCRIPT
+MSBI.DEV.COURSE.S20E09.SCRIPT
 =========================================*/
 
 
@@ -139,22 +139,23 @@ SELECT * FROM #Categories WHERE [categoryid] = 11;
 SELECT * FROM #Products WHERE [productid] = 1;
 
 BEGIN TRAN;
-	INSERT INTO
-		#Categories
-		([categoryid], [categoryname])
-	VALUES
-		(11, N'Shmategory')
-	;
 
-	BEGIN TRAN
-		UPDATE
-			#Products
-		SET
-			[categoryid] = 11
-		WHERE
-			[productid] = 1
+	BEGIN TRAN;
+		INSERT INTO
+			#Categories
+			([categoryid], [categoryname])
+		VALUES
+			(11, N'Shmategory')
 		;
 	COMMIT TRAN;
+
+	UPDATE
+		#Products
+	SET
+		[categoryid] = 11
+	WHERE
+		[productid] = 1
+	;
 
 	SELECT * FROM #Categories WHERE [categoryid] = 11;
 	SELECT * FROM #Products WHERE [productid] = 1;
@@ -242,6 +243,43 @@ EXEC sp_who2;
 
 SELECT *  FROM sys.dm_tran_locks
 
+
+/*=========================================
+Batch
+=========================================*/
+SELECT 1;
+SELECT 1;
+SELECT 1;
+GO
+SELECT 1;
+GO
+
+--Variables
+DECLARE @x INT = 1;
+SELECT @x;
+GO
+SELECT @x; --Error
+
+
+--One transaction per few batches
+BEGIN TRAN;
+GO
+SELECT empid, lastname, firstname, postalcode
+FROM HR.Employees;
+GO
+COMMIT TRAN;
+GO
+
+--Few transactions per one batch
+BEGIN TRAN;
+SELECT empid, lastname, firstname, postalcode
+FROM HR.Employees;
+COMMIT TRAN;
+BEGIN TRAN;
+SELECT empid, lastname, firstname, postalcode
+FROM HR.Employees;
+COMMIT TRAN;
+GO
 
 /*=========================================
 RAISERROR
@@ -545,7 +583,8 @@ BEGIN CATCH
      SELECT XACT_STATE() as 'XACT_STATE',
                 @@TRANCOUNT as '@@TRANCOUNT';
      IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-          THROW;
+     
+	 THROW;
 END CATCH;
 GO
 SELECT XACT_STATE() as 'XACT_STATE', @@TRANCOUNT as '@@TRANCOUNT';
