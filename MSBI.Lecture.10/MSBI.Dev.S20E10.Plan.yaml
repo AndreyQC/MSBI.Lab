@@ -8,6 +8,7 @@ topics:
    - subtopicname: SQL Injection
    - subtopicname: Using sp_executesql
    - subtopicname: Use case scenarios 
+- topicname: Understanding Temporary Tables
 - topicname: Designing and Implementing Stored Procedures
   subtopics:
    - subtopicname: Understanding Stored Procedures
@@ -24,10 +25,5 @@ topics:
    - subtopicname: INSTEAD OF Triggers
    - subtopicname: DML Trigger Functions
      keywords: [UP DATE (),COLUMNS _UPDATED()]
-- topicname: Implementing User-Defined Functions
-  subtopics:
-   - subtopicname: Scalar UDFs
-   - subtopicname: Inline Table-Valued UDF
-   - subtopicname: Multistatement Table-Valued UDF
-   - subtopicname: Limitations on UDFs
+- topicname: Using Cursors
 ---

@@ -1,27 +1,7 @@
 /*=========================================
-MSBI.DEV.COURSE.S19E10.SCRIPT
+MSBI.DEV.COURSE.S20E10.SCRIPT
 =========================================*/
 
-
--- few words about batch
-USE TSQL2012;
-GO
-DECLARE @MyMsg VARCHAR(50);
-SELECT @MyMsg = 'Hello, World.'
---GO -- @MyMsg is not valid after this GO ends the batch.
-
-
---https://docs.microsoft.com/en-us/sql/t-sql/language-elements/sql-server-utilities-statements-go
--- Yields an error because @MyMsg not declared in this batch.
-PRINT @MyMsg
-GO
-sp_who
-SELECT @@VERSION;
--- Yields an error: Must be EXEC sp_who if not first statement in 
--- batch.
-go -- comment it
-sp_who
-GO
 /*
 
 https://www.mssqltips.com/sqlservertip/1888/when-to-use-set-vs-select-when-assigning-values-to-variables-in-sql-server/
@@ -38,33 +18,80 @@ where SELECT will not make the assignment at all (so the variable will not be ch
  However SELECT's ability to make multiple assignments in one shot does give it a slight speed advantage over SET.
 */
 
-USE AdventureWorks2014
+USE [TSQL2012];
 GO
 
--- Part1. Populate by single row through SET
-DECLARE @Var1ForSet varchar(50)
-SET @Var1ForSet = (SELECT [Name] FROM Production.Product WHERE ProductNumber = 'HY-1023-70')
-PRINT @Var1ForSet
+-- Populate by single row
+DECLARE @ProductId INT = -1;
+SET @ProductId	= (SELECT productid FROM [Production].[Products] WHERE [productname] = N'Product HHYDP');
+
+SELECT @ProductId;
 GO
 
--- Part 2. Populate by multiple rows through SET
-DECLARE @Var2ForSet varchar(50)
-SET @Var2ForSet = (SELECT [Name] FROM Production.Product WHERE Color = 'Silver')
-PRINT @Var2ForSet
-GO
--- Part2. Populate by multiple rows through SELECT
-DECLARE @Var2ForSelect varchar(50)
-SELECT @Var2ForSelect = [Name] FROM Production.Product WHERE Color = 'Silver'
-PRINT @Var2ForSelect
+DECLARE @ProductId INT = -1;
+SELECT @ProductId	= productid FROM [Production].[Products] WHERE [productname] = N'Product HHYDP';
+
+SELECT @ProductId;
 GO
 
--- Part2. Populate by multiple rows through SELECT
-DECLARE @Var2ForSelect varchar(MAX)
-SELECT @Var2ForSelect = COALESCE(@Var2ForSelect + ', ', '') + Name FROM Production.Product 
-PRINT @Var2ForSelect
-GO
--- provide with opposite task
+-- Try to populate by empty result set
+DECLARE @ProductId INT = -1;
+SET @ProductId	= (SELECT productid FROM [Production].[Products] WHERE [productname] = N'Product ABC');
 
+SELECT @ProductId;
+GO
+
+DECLARE @ProductId INT = -1;
+SELECT @ProductId	= productid FROM [Production].[Products] WHERE [productname] = N'Product ABC';
+
+SELECT @ProductId;
+GO
+
+-- Populate by multiple rows
+DECLARE @ProductId INT = -1;
+SET @ProductId	= (SELECT productid FROM [Production].[Products] WHERE [supplierid] = 1);
+
+SELECT @ProductId;
+GO
+
+DECLARE @ProductId INT = -1;
+SELECT @ProductId	= productid FROM [Production].[Products] WHERE [supplierid] = 1;
+
+SELECT @ProductId;
+GO
+
+-- Use the feature
+DECLARE @AllProducts NVARCHAR(MAX) = N'';
+SELECT
+	@AllProducts	= @AllProducts + [productname] + N','
+FROM
+	[Production].[Products]
+ORDER BY
+	[productname]
+;
+SELECT @AllProducts;
+
+--Alternate approach
+SELECT
+	[productname] + N',' AS 'data()'
+FROM
+	[Production].[Products]
+ORDER BY
+	[productname]
+FOR XML PATH ('')
+;
+
+--SQL 2017
+SELECT
+	STRING_AGG([productname], N',')
+FROM
+	[Production].[Products]
+;
+
+
+/*====================================================================================================================================================
+--Dynamic SQL Overview
+=========================================*/
 
 declare @n char(1)
 set @n = char(10)
@@ -102,31 +129,31 @@ from sys.types
 where is_user_defined = 1
 
 select @stmt
+PRINT @stmt;
 
 --exec sp_executesql @stmt
 
 
-/*====================================================================================================================================================
---Dynamic SQL Overview
-=========================================*/
 USE TSQL2012;
 GO
 SELECT COUNT(*) AS ProductRowCount FROM [Production].[Products];
 
-SELECT a.name as 'SchemaName',o.name as 'TableName', i.rowcnt as 'RowCount'FROM 
-    sys.schemas a, sys.objects o, sysindexes iWHERE i.id=o.object_idAND a.schema_id=o.schema_idAND indid in(0,1)AND o.type='U'AND o.name <> 'sysdiagrams'
-    --AND a.name in ('EEDM','APACHE','ER','GIL','GOMEZ','SUMMARY','SCOM')
-    ORDER BY a.name desc
+
+SELECT a.name as 'SchemaName',o.name as 'TableName', i.rowcnt as 'RowCount'
+FROM sys.schemas a, sys.objects o, sysindexes i
+WHERE i.id=o.object_idAND a.schema_id=o.schema_idAND indid in(0,1)AND o.type='U'AND o.name <> 'sysdiagrams'
+ORDER BY a.name desc
 
 
 USE TSQL2012;
 GO
 DECLARE @tablename AS NVARCHAR(261) = N'[Production].[Products]';
 PRINT N'SELECT COUNT(*) FROM ' + @tablename;
--- provide with task for count in all tables
+GO
 
 DECLARE @tablename AS NVARCHAR(261) = N'[Production].[Products]';
 SELECT N'SELECT COUNT(*) FROM ' + @tablename;
+GO
 
 DECLARE @tablename AS NVARCHAR(261) = N'[Production].[Products]';
 
@@ -134,15 +161,9 @@ EXECUTE (N'SELECT COUNT(*) AS TableRowCount FROM ' + @tablename);
 /*====================================================================================================================================================
 single quotation marks PROBLEM
 =========================================*/
-USE TSQL2012;
-GO
---try
-/*
-SELECT custid, companyname, contactname, contacttitle, addressFROM [Sales].[Customers]
-WHERE address = N'5678 rue de l'Abbaye';
-*/
 
-SELECT custid, companyname, contactname, contacttitle, [address] FROM [Sales].[Customers]
+SELECT custid, companyname, contactname, contacttitle, [address]
+FROM [Sales].[Customers]
 WHERE address = N'5678 rue de l''Abbaye';
 GO
 -- getting worse
@@ -152,8 +173,6 @@ WHERE address = N''5678 rue de l''''Abbaye'';';
 
 
 
-USE TSQL2012;
-GO
 DECLARE @address AS NVARCHAR(60) = '5678 rue de l''Abbaye';
 PRINT N'SELECT *
 FROM [Sales].[Customers]
@@ -166,62 +185,11 @@ FROM [Sales].[Customers]
 WHERE address = '+ QUOTENAME(@address, '''') + ';';
 EXECUTE(@SQLString);
 GO
-/*====================================================================================================================================================
-EXEC
-=========================================*/
-USE TSQL2012;
-GO
-DECLARE 
-     @SQLString AS NVARCHAR(4000)
-     , @tablename AS NVARCHAR(261) = 
-                                        '[Production].[Products]';
-                                        SET @SQLString = 'SELECT COUNT(*) AS TableRowCount FROM ' + @tablename;
-EXECUTE(@SQLString);
-
-USE TSQL2012;
-GO
-DECLARE @SQLString AS NVARCHAR(MAX)
-, @tablename AS NVARCHAR(261) = '[Production].[Products]';
-SET @SQLString = 'SELECT COUNT(*) AS TableRowCount FROM '
-EXEC(@SQLString + @tablename);
 
 /*====================================================================================================================================================
 SQL Injection
 =========================================*/
 
-USE TSQL2012;
-GO
-DECLARE 
-     @SQLString AS NVARCHAR(4000)
-     , @tablename AS NVARCHAR(261) = 
-                                        '[Production].[Products]';
-                                        SET @SQLString = 'SELECT COUNT(*) FROM ' + @tablename;							--[1]
-                                        
-                                   
-EXEC(@SQLString);
-/*====================================================================================================================================================
-Using sp_executesql
-=========================================*/
-USE TSQL2012;
-GO
-DECLARE @SQLString AS NVARCHAR(4000), @address AS NVARCHAR(60);
-SET @SQLString = N'
-          SELECT custid, companyname, contactname, contacttitle, address
-          FROM [Sales].[Customers]
-          WHERE address = @address';
-SET @address = N'5678 rue de l''Abbaye';
-EXEC sp_executesql
-          @statement = @SQLString
-          , @params = N'@address NVARCHAR(60)'
-          , @address = @address;
-
-/*====================================================================================================================================================
-prevent code injection
-
-========================================*/
-
-USE TSQL2012;
-GO
 IF OBJECT_ID('Sales.ListCustomersByAddress') IS NOT NULL
 DROP PROCEDURE Sales.ListCustomersByAddress;
 GO
@@ -232,7 +200,7 @@ AS
      SET @SQLString = '
      SELECT companyname, contactname
      FROM Sales.Customers WHERE address = ''' + @address + '''';
-     --PRINT @SQLString;
+     PRINT @SQLString;
      EXEC(@SQLString);
      RETURN;
 GO
@@ -247,21 +215,17 @@ EXEC Sales.ListCustomersByAddress @address = '''';
 
 USE TSQL2012;
 GO
-EXEC Sales.ListCustomersByAddress @address = ''' -- SELCT 1 ';
+EXEC Sales.ListCustomersByAddress @address = 'x'' OR 1=1 --';
+
+USE TSQL2012;
+GO
+EXEC Sales.ListCustomersByAddress @address = '''; SELECT * FROM sys.tables  -- ';
+
 
 
 USE TSQL2012;
 GO
-EXEC Sales.ListCustomersByAddress @address = ''' SELECT 1  -- ';
-
-
-
-USE TSQL2012;
-GO
-IF OBJECT_ID('Sales.ListCustomersByAddress') IS NOT NULL
-     DROP PROCEDURE Sales.ListCustomersByAddress;
-GO
-CREATE PROCEDURE Sales.ListCustomersByAddress
+CREATE OR ALTER PROCEDURE Sales.ListCustomersByAddress
      @address AS NVARCHAR(60)
 AS
 DECLARE @SQLString AS NVARCHAR(4000);
@@ -269,18 +233,19 @@ DECLARE @SQLString AS NVARCHAR(4000);
      SELECT companyname, contactname
      FROM Sales.Customers WHERE address = @address';
      EXEC sp_executesql
-     @statment = @SQLString
-     , @params = N'@address NVARCHAR(60)'
-     , @address = @address;
+		@statment = @SQLString
+		, @params = N'@address NVARCHAR(60)'
+		, @address = @address;
      RETURN;
 GO
 
 
 USE TSQL2012;
 GO
+EXEC Sales.ListCustomersByAddress @address = '8901 Tsawassen Blvd.';
 EXEC Sales.ListCustomersByAddress @address = '''';
-EXEC Sales.ListCustomersByAddress @address = ''' -- ';
-EXEC Sales.ListCustomersByAddress @address = ''' SELECT 1 -- ';
+EXEC Sales.ListCustomersByAddress @address = 'x'' OR 1=1 --';
+EXEC Sales.ListCustomersByAddress @address = '''; SELECT * FROM sys.tables  -- ';
 
 
 -- out put parameter
@@ -298,19 +263,91 @@ SELECT @outercount AS 'RowCount';
 --EXEC sp_executesql @sql, N'@p1 INT, @p2 INT, @p3 INT', @p1, @p2, @p3;
 go
 
-DECLARE @IntVariable int;
-DECLARE @SQLString nvarchar(500);
-DECLARE @ParmDefinition nvarchar(500);
-DECLARE @max_title varchar(30);
+DECLARE @ProductCount INT;
+DECLARE @SupplierId INT = 1;
+DECLARE @CategoryId INT = 1;
+DECLARE @SQLString AS NVARCHAR(4000) = N'
+	SELECT @ProductCount	= COUNT(*)
+	FROM Production.Products
+	WHERE	[supplierid]		= @SupplierId
+			AND [categoryid]	= @CategoryId';
+EXEC sp_executesql @SQLString,
+	N'@SupplierId INT,
+	@CategoryId INT,
+	@ProductCount INT OUTPUT',
+	@SupplierId = @SupplierId,
+	@CategoryId = @CategoryId,
+	@ProductCount = @ProductCount OUTPUT
+;
+SELECT @ProductCount;
 
-SET @IntVariable = 197;
-SET @SQLString = N'SELECT @max_titleOUT = max(JobTitle) 
-   FROM AdventureWorks2014.HumanResources.Employee
-   WHERE BusinessEntityID = @level';
-SET @ParmDefinition = N'@level tinyint, @max_titleOUT varchar(30) OUTPUT';
 
-EXECUTE sp_executesql @SQLString, @ParmDefinition, @level = @IntVariable, @max_titleOUT=@max_title OUTPUT;
-SELECT @max_title;
+
+
+--=======================================================================
+-- using temporary tables vs. table variables
+--=======================================================================
+ 
+ -- temp table features
+DROP TABLE IF EXISTS #T1;
+CREATE TABLE #T1 (   col1 INT NOT NULL ); 
+ 
+INSERT INTO #T1(col1) VALUES(10), (11), (12); 
+ 
+EXEC('SELECT col1 FROM #T1;');
+GO 
+ 
+SELECT col1 FROM #T1;
+
+TRUNCATE TABLE #T1;
+ 
+DROP TABLE IF EXISTS #T1;
+GO
+
+ -- table variable features
+DECLARE @T1 AS TABLE (   col1 INT NOT NULL ); 
+ 
+INSERT INTO @T1(col1) VALUES(10), (11), (12); 
+
+SELECT * FROM @T1 --OPTION(RECOMPILE);
+
+EXEC('SELECT col1 FROM @T1;');
+
+--TRUNCATE TABLE @T1;
+GO
+
+--SELECT * FROM @T1;
+GO
+
+
+
+ -- transaction
+DROP TABLE IF EXISTS #T1;
+CREATE TABLE #T1 (   col1 INT NOT NULL ); 
+ 
+BEGIN TRAN 
+ 
+  INSERT INTO #T1(col1) VALUES(10); 
+ 
+ROLLBACK TRAN 
+ 
+SELECT col1 FROM #T1; 
+ 
+DROP TABLE #T1; 
+GO
+
+
+DECLARE @T1 AS TABLE (   col1 INT NOT NULL ); 
+ 
+BEGIN TRAN 
+ 
+  INSERT INTO @T1(col1) VALUES(10);
+ 
+ROLLBACK TRAN 
+ 
+SELECT col1 FROM @T1;
+
+
 
 
 
@@ -346,10 +383,7 @@ WHERE custid = @custid
 GO
 
 
-IF OBJECT_ID('Sales.GetCustomerOrders', 'P') IS NOT NULL
-DROP PROC Sales.GetCustomerOrders;
-GO
-CREATE PROC Sales.GetCustomerOrders
+CREATE OR ALTER PROC Sales.GetCustomerOrders
      @custid AS INT,
      @orderdatefrom AS DATETIME = '19000101',
      @orderdateto AS DATETIME = '99991231',
@@ -383,9 +417,7 @@ GO
 Input Parameters
 =========================================*/
 
-EXEC Sales.GetCustomerOrders 37, '20070401', '20070701', 0;
-
-EXEC Sales.GetCustomerOrders @custid = 37, @orderdatefrom = '20070401', @orderdateto = '20070701';
+EXEC Sales.GetCustomerOrders 37, '20070401', '20070701';
 
 EXEC Sales.GetCustomerOrders
         @orderdateto = '20070701',
@@ -420,24 +452,120 @@ SELECT @rowsreturned AS 'Rows Returned';
 GO
 
 /*====================================================================================================================================================
+Passing table data
+=========================================*/
+
+--table variables
+DROP TYPE IF EXISTS [typ_ProductTable];
+CREATE TYPE [typ_ProductTable] AS TABLE
+(
+     [productname] NVARCHAR(40) NOT NULL,
+     [categoryid] INT NOT NULL,
+     [supplierid] INT NOT NULL,
+     [unitprice] MONEY NOT NULL,
+     [discontinued] BIT NOT NULL
+);
+GO
+
+CREATE OR ALTER PROCEDURE Production.InsertProducts
+	@Products [typ_ProductTable] READONLY
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+    INSERT Production.Products
+		(productname, supplierid, categoryid, unitprice, discontinued)
+	OUTPUT
+		inserted.productname, inserted.supplierid, inserted.categoryid, inserted.unitprice, inserted.discontinued
+	SELECT
+		productname, supplierid, categoryid, unitprice, discontinued
+	FROM @Products;
+END;
+GO
+
+DECLARE @Products [typ_ProductTable];
+INSERT INTO @Products
+VALUES
+	(N'New Product 1', 1, 1, 10.0, 0),
+	(N'New Product 2', 1, 1, 10.0, 0);
+
+EXEC Production.InsertProducts @Products;
+GO
+
+
+--JSON
+CREATE OR ALTER PROCEDURE Production.InsertProducts
+	@Products NVARCHAR(MAX)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+    INSERT Production.Products
+		(productname, supplierid, categoryid, unitprice, discontinued)
+	OUTPUT
+		inserted.productname, inserted.supplierid, inserted.categoryid, inserted.unitprice, inserted.discontinued
+	SELECT
+		productname, supplierid, categoryid, unitprice, discontinued
+	FROM OPENJSON(@Products) WITH(
+		[productname] NVARCHAR(40) '$.productname',
+		[categoryid] INT '$.categoryid',
+		[supplierid] INT '$.supplierid',
+		[unitprice] MONEY '$.unitprice',
+		[discontinued] BIT '$.discontinued'
+	);
+END;
+GO
+
+DECLARE @ProductJSON NVARCHAR(MAX) = N'
+[
+	{"productname": "New Product 3", "categoryid": 1, "supplierid": 1, "unitprice": 10.0, "discontinued": 0},
+	{"productname": "New Product 4", "categoryid": 1, "supplierid": 1, "unitprice": 10.0, "discontinued": 0}
+]';
+
+EXEC Production.InsertProducts @ProductJSON;
+GO
+
+--Other options:
+--XML
+--String with separators, like 'New Product,1,1,10.0'
+
+--Clean up
+DROP TYPE IF EXISTS [typ_ProductTable];
+DELETE Production.Products WHERE productname LIKE N'New Product%';
+GO
+
+
+/*====================================================================================================================================================
 IF/ELSE
 =========================================*/
 
 DECLARE @var1 AS INT, @var2 AS INT;
 SET @var1 = 1;
+SET @var2 = 2;
+
+-- without begin end
+IF @var1 = @var2
+    PRINT 'The variables are equal';
+ELSE
+    PRINT 'The variables are not equal';
+GO
+
+-- with begin end
+DECLARE @var1 AS INT, @var2 AS INT;
+SET @var1 = 1;
 SET @var2 = 1;
 
-IF @var1 = @var2
-    BEGIN
-        PRINT 'The variables are equal';
-    END
+IF @var1 = @var2 
+BEGIN
+	PRINT 'The variables are equal';
+	PRINT '@var1 equals @var2';
+END
 ELSE
-    BEGIN
-        PRINT 'The variables are not equal';
-
-    END
+BEGIN
+	PRINT 'The variables are not equal';
+    PRINT '@var1 does not equal @var2';
+END
 GO
--- without begin end
 
 DECLARE @var1 AS INT, @var2 AS INT;
 SET @var1 = 1;
@@ -453,21 +581,6 @@ ELSE
      PRINT '@var1 does not equal @var2';
 GO
 
--- with begin end
-DECLARE @var1 AS INT, @var2 AS INT;
-SET @var1 = 1;
-SET @var2 = 1;
-IF @var1 = @var2 
-     BEGIN
-          PRINT 'The variables are equal';
-          PRINT '@var1 equals @var2';
-     END
-ELSE
-     BEGIN
-          PRINT 'The variables are not equal';
-          PRINT '@var1 does not equal @var2';
-     END
-GO
 /*====================================================================================================================================================
 WHILE
 ===================================================================================================================================================*/
@@ -476,11 +589,10 @@ SET NOCOUNT ON;
 DECLARE @count AS INT = 1;
 
 WHILE  @count <= 10
-     BEGIN
-          PRINT CAST(@count AS NVARCHAR);
-          SET @count += 1;
-
-     END;
+BEGIN
+	PRINT CAST(@count AS NVARCHAR);
+    SET @count += 1;
+END;
 
 GO
 
@@ -488,17 +600,19 @@ SET NOCOUNT ON;
 DECLARE @count AS INT = 1;
 
 WHILE @count <= 100
-     BEGIN
-          IF @count = 10
-          BREAK;
-               IF @count = 5
-                    BEGIN
-                         SET @count += 2;
-                         CONTINUE;
-                    END
-               PRINT CAST(@count AS NVARCHAR);
-          SET @count += 1;
-     END
+BEGIN
+	IF @count = 10
+		BREAK;
+
+	IF @count = 5
+    BEGIN
+		SET @count += 2;
+		CONTINUE;
+	END
+
+	PRINT CAST(@count AS NVARCHAR);
+	SET @count += 1;
+END
 
 /*====================================================================================================================
 
@@ -562,7 +676,7 @@ CREATE PROCEDURE Production.InsertProducts
 AS
 BEGIN
      DECLARE @ClientMessage NVARCHAR(100);
-          BEGIN TRY
+     BEGIN TRY
           -- Test parameters
           IF NOT EXISTS(SELECT 1 FROM Production.Suppliers WHERE supplierid = @supplierid)
           BEGIN
@@ -586,9 +700,9 @@ BEGIN
           INSERT Production.Products (productname, supplierid, categoryid, unitprice, discontinued)
           VALUES (@productname, @supplierid, @categoryid, @unitprice, @discontinued);
      END TRY
-          BEGIN CATCH
-               THROW;
-          END CATCH;
+    BEGIN CATCH
+        THROW;
+    END CATCH;
 END;
 GO
 
@@ -608,6 +722,7 @@ EXEC Production.InsertProducts
 , @discontinued = 0
 
 go
+
 --*********************************************************************************************************************************************************************
 
 /*====================================================================================================================================================
@@ -718,118 +833,74 @@ IF OBJECT_ID('Production.tr_ProductionCategories_categoryname', 'TR') IS NOT NUL
 DROP TRIGGER Production.tr_ProductionCategories_categoryname;
 
 
+--=======================================================================
+-- Understanding Cursors
+--=======================================================================
+USE TSQL2012; 
+ 
+IF OBJECT_ID('Sales.ProcessCustomer') IS NOT NULL   DROP PROC Sales.ProcessCustomer; 
+GO 
+ 
+CREATE PROC Sales.ProcessCustomer (   @custid AS INT ) 
+AS  
+PRINT 'Processing customer ' + CAST(@custid AS VARCHAR(10)); 
+GO
+
+
+--=======================================================================
+-- Cursor
+--=======================================================================
+SET NOCOUNT ON; 
+ 
+DECLARE @curcustid AS INT; 
+ 
+DECLARE cust_cursor CURSOR FAST_FORWARD FOR   
+SELECT custid   
+FROM Sales.Customers;
+
+OPEN cust_cursor; 
+ 
+FETCH NEXT FROM cust_cursor INTO @curcustid; 
+ 
+WHILE @@FETCH_STATUS = 0 
+BEGIN   
+    EXEC Sales.ProcessCustomer @custid = @curcustid; 
+    FETCH NEXT FROM cust_cursor INTO @curcustid; 
+END; 
+ 
+CLOSE cust_cursor; 
+ 
+DEALLOCATE cust_cursor; 
+GO
+ 
+--=======================================================================
+-- another approach
+--=======================================================================
+SET NOCOUNT ON; 
+ 
+DECLARE @curcustid AS INT; 
+ 
+SET @curcustid = 
+(
+    SELECT TOP (1) custid
+    FROM Sales.Customers
+    ORDER BY custid
+); 
+ 
+WHILE @curcustid IS NOT NULL 
+BEGIN   
+	EXEC Sales.ProcessCustomer @custid = @curcustid;      
+	SET @curcustid = 
+	(
+		SELECT TOP (1) custid                     
+		FROM Sales.Customers                     
+		WHERE custid > @curcustid                     
+		ORDER BY custid
+	); 
+END; 
+GO
+
+
+
 --*********************************************************************************************************************************************************************
 
-/*====================================================================================================================================================
-
-=========================================*/
-
-
-IF OBJECT_ID('Sales.fn_extension', 'FN') IS NOT NULL
-DROP FUNCTION Sales.fn_extension
-GO
-CREATE FUNCTION Sales.fn_extension
-          (
-               @unitprice AS MONEY,
-               @qty AS INT
-          )
-RETURNS MONEY
-AS
-BEGIN
-     RETURN @unitprice * @qty
-END;
-GO
--- use UDFs
-SELECT Orderid, unitprice, qty, Sales.fn_extension(unitprice, qty) AS extension
-FROM Sales.OrderDetails;
-
--- also UDFs can be used in this way
-SELECT Orderid, unitprice, qty, Sales.fn_extension(unitprice, qty) AS extension
-FROM Sales.OrderDetails
-WHERE Sales.fn_extension(unitprice, qty) > 1000;
-
-SELECT Orderid, unitprice, qty, unitprice* qty AS extension
-FROM Sales.OrderDetails
-WHERE unitprice* qty > 1000;
-
-
-/*====================================================================================================================================================
-Inline Table-Valued UDF
-
-=========================================*/
-
-IF OBJECT_ID('Sales.fn_FilteredExtension', 'IF') IS NOT NULL
-DROP FUNCTION Sales.fn_FilteredExtension;
-GO
-CREATE FUNCTION Sales.fn_FilteredExtension
-(
-     @lowqty AS SMALLINT,
-     @highqty AS SMALLINT
-)
-RETURNS TABLE AS RETURN
-(
-     SELECT orderid, unitprice, qty
-     FROM Sales.OrderDetails
-     WHERE qty BETWEEN @lowqty AND @highqty
-);
-GO
-
--- calling
-
-SELECT orderid, unitprice, qty
-FROM Sales.fn_FilteredExtension (10,20);
-/*====================================================================================================================================================
-Multistatement Table-Valued UDF
-
-=========================================*/
-IF OBJECT_ID('Sales.fn_FilteredExtension2', 'TF') IS NOT NULL
-DROP FUNCTION Sales.fn_FilteredExtension2;
-GO
-CREATE FUNCTION Sales.fn_FilteredExtension2
-(
-     @lowqty AS SMALLINT,
-     @highqty AS SMALLINT
-)
-RETURNS @returntable TABLE
-(
-     orderid INT,
-     unitprice MONEY,
-     qty SMALLINT
-)
-AS
-BEGIN
-     INSERT @returntable
-     SELECT orderid, unitprice, qty
-     FROM Sales.OrderDetails
-     WHERE qty BETWEEN @lowqty AND @highqty
-
-     RETURN
-END;
-GO
--- review 
-SET STATISTICS TIME ON;
-
-SELECT orderid, unitprice, qty
-FROM Sales.fn_FilteredExtension2 (10,20);
-
-SELECT orderid, unitprice, qty
-FROM Sales.fn_FilteredExtension (10,20);
-
-
-
-SET STATISTICS TIME OFF;
-
-
-/*====================================================================================================================================================
-
-=========================================*/
-
-
-/*=========================================
-
-=========================================*/
-
-
-/*=========================================
-
-=========================================*/
