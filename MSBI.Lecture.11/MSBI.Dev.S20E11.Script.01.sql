@@ -196,27 +196,8 @@ FROM Sales.Orders
 WHERE orderdate<=DATEADD(day, 2, '20060709') 
 	AND   orderdate >'20060709'
 
--- compare plan
-SELECT 
-    orderid, 
-    custid, 
-    orderdate, 
-    shipname
-FROM Sales.Orders
-WHERE orderdate IN ('20060710', '20060711');
 
-SELECT 
-    orderid, 
-    custid, 
-    orderdate, 
-    shipname
-FROM Sales.Orders
-WHERE orderdate = '20060710'
-	OR orderdate = '20060711';
-
-
-
-
+--Supporting queries with indexes
 
 DROP TABLE IF EXISTS [dbo].[OrdersIdx];
 DROP TABLE IF EXISTS [dbo].[OrdersNonIdx];
@@ -262,15 +243,6 @@ SELECT orderid, shipregion
 FROM [dbo].[OrdersIdx]
 WHERE shipregion = N'Isle of Wight';
 
--- group by
-SELECT shipregion, COUNT(*) AS num_regions
-FROM [dbo].[OrdersNonIdx]
-GROUP BY shipregion;
-
-SELECT shipregion, COUNT(*) AS num_regions
-FROM [dbo].[OrdersIdx]
-GROUP BY shipregion;
-
 -- sorting
 SELECT orderid, shipregion
 FROM [dbo].[OrdersNonIdx]
@@ -279,6 +251,15 @@ ORDER BY shipregion;
 SELECT orderid, shipregion
 FROM [dbo].[OrdersIdx]
 ORDER BY shipregion;
+
+-- group by
+SELECT shipregion, COUNT(*) AS num_regions
+FROM [dbo].[OrdersNonIdx]
+GROUP BY shipregion;
+
+SELECT shipregion, COUNT(*) AS num_regions
+FROM [dbo].[OrdersIdx]
+GROUP BY shipregion;
 
 
 --index with update
@@ -300,6 +281,10 @@ SELECT orderid, custid, shipregion
 FROM [dbo].[OrdersIdx]
 WHERE shipregion = N'Isle of Wight';
 
+SELECT orderid, custid, shipregion
+FROM [dbo].[OrdersIdx] WiTH (FORCESEEK)
+WHERE shipregion = N'Isle of Wight';
+
 CREATE NONCLUSTERED INDEX [IX_OrdersIdx_shipregion]
 	ON [dbo].[OrdersIdx] ([shipregion])
 	INCLUDE ([custid])
@@ -319,7 +304,6 @@ USE TSQL2012;
 DROP VIEW IF EXISTS Sales.QuantityByCountry;
 GO
 
-SET STATISTICS IO ON;
 -- Aggregate query with a join
 SELECT 
     O.shipcountry, 
@@ -354,8 +338,13 @@ SELECT
     number_of_rows
 FROM Sales.QuantityByCountry WITH (NOEXPAND)
 
+SELECT
+	shipcountry, 
+    total_ordered,
+    number_of_rows
+FROM Sales.QuantityByCountry WITH (NOEXPAND)
+WHERE total_ordered > 3000
 
-SET STATISTICS IO OFF;
 
 DROP VIEW IF EXISTS Sales.QuantityByCountry;
 GO
@@ -729,7 +718,7 @@ FROM sys.dm_exec_requests AS R
 WHERE S.is_user_process = 1;
 
 --============================================================================================================================================
--- most time consuming
+-- most io consuming
 --============================================================================================================================================
 SELECT TOP (5)
     (total_logical_reads + total_logical_writes) AS total_logical_IO,
@@ -809,7 +798,7 @@ SELECT
 FROM Sales.Customers AS C
     INNER JOIN Sales.Orders AS O
         ON C.custid = O.custid
-WHERE O.custid = '5'
+WHERE O.custid < 5
 GROUP BY C.custid
 HAVING COUNT(*) > 6;
 
@@ -862,130 +851,3 @@ ORDER BY C.custid, O.orderid;
 
 
 
-
-
---=======================================================================
--- Understanding Cursors, Sets, and Temporary Tables
---=======================================================================
-USE TSQL2012; 
- 
-IF OBJECT_ID('Sales.ProcessCustomer') IS NOT NULL   DROP PROC Sales.ProcessCustomer; 
-GO 
- 
-CREATE PROC Sales.ProcessCustomer (   @custid AS INT ) 
-AS  
-PRINT 'Processing customer ' + CAST(@custid AS VARCHAR(10)); 
-GO
-
-
---=======================================================================
--- Cursor
---=======================================================================
-SET NOCOUNT ON; 
- 
-DECLARE @curcustid AS INT; 
- 
-DECLARE cust_cursor CURSOR FAST_FORWARD FOR   
-SELECT custid   
-FROM Sales.Customers;
-
-OPEN cust_cursor; 
- 
-FETCH NEXT FROM cust_cursor INTO @curcustid; 
- 
-WHILE @@FETCH_STATUS = 0 
-BEGIN   
-    EXEC Sales.ProcessCustomer @custid = @curcustid; 
-    FETCH NEXT FROM cust_cursor INTO @curcustid; 
-END; 
- 
-CLOSE cust_cursor; 
- 
-DEALLOCATE cust_cursor; 
-GO
- 
---=======================================================================
--- another approach
---=======================================================================
-SET NOCOUNT ON; 
- 
-DECLARE @curcustid AS INT; 
- 
-SET @curcustid = 
-(
-    SELECT TOP (1) custid
-    FROM Sales.Customers
-    ORDER BY custid
-); 
- 
-WHILE @curcustid IS NOT NULL 
-BEGIN   
-EXEC Sales.ProcessCustomer @custid = @curcustid;      
-SET @curcustid = 
-(
-    SELECT TOP (1) custid                     
-    FROM Sales.Customers                     
-    WHERE custid > @curcustid                     
-    ORDER BY custid
-); 
-END; 
-GO
-
-
---=======================================================================
--- using temporary tables vs. table variables
---=======================================================================
- 
- -- temp table
- CREATE TABLE #T1 (   col1 INT NOT NULL ); 
- 
-INSERT INTO #T1(col1) VALUES(10), (11), (12); 
- 
-EXEC('SELECT col1 FROM #T1;');
- GO 
- 
-SELECT col1 FROM #T1; 
-GO 
- 
-DROP TABLE #T1;
- GO
-
- -- table variable
- DECLARE @T1 AS TABLE (   col1 INT NOT NULL ); 
- 
-INSERT INTO @T1(col1) VALUES(10), (11), (12); 
-
-SELECT * FROM @T1
-
-EXEC('SELECT col1 FROM @T1;'); 
-GO
-
---SELECT * FROM @T1; 
-GO
-
-
-
- -- transaction
-CREATE TABLE #T1 (   col1 INT NOT NULL ); 
- 
-BEGIN TRAN 
- 
-  INSERT INTO #T1(col1) VALUES(10); 
- 
-ROLLBACK TRAN 
- 
-SELECT col1 FROM #T1; 
- 
-DROP TABLE #T1; 
-GO
-
-
-DECLARE @T1 AS TABLE (   col1 INT NOT NULL ); 
- 
-BEGIN TRAN 
- 
-  INSERT INTO @T1(col1) VALUES(10); 
- 
-ROLLBACK TRAN 
- 
-SELECT col1 FROM @T1;

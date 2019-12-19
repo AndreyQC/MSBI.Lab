@@ -11,8 +11,4 @@ topics:
    - subtopicname: Heap Tables
    - subtopicname: Clustered Indexes
    - subtopicname: Supporting Queries with Indexes
-- topicname: Understanding Cursors, Sets, and Temporary Tables
-  subtopics: 
-   - subtopicname: Cursors
-   - subtopicname: Temporary Tables
 ---
