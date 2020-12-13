@@ -1,0 +1,29 @@
+---
+topics:
+- topicname: About this Course
+  subtopics:   
+   - subtopicname: Course Technologies
+   - subtopicname: Course Timeline
+   - subtopicname: Course Workflow
+- topicname: Database evolution
+  subtopics:
+   - subtopicname: File Management System
+   - subtopicname: Hierarchical database System
+   - subtopicname: Network Database System
+   - subtopicname: Relational Database System
+   - subtopicname: NoSQL, NewSQL
+- topicname: MS SQL Server overview
+  subtopics:
+   - subtopicname: Magic Quadrant for Operational Database Management Systems
+   - subtopicname: MS SQL Server Key Components
+   - subtopicname: Database Engine
+   - subtopicname: The Evolution of MS Data Platform
+   - subtopicname: New features in MS SQL Server 2019
+   - subtopicname: MS SQL Server Trends
+- topicname: Resources
+  subtopics:
+   - subtopicname: OneNote
+   - subtopicname: Educational Server
+   - subtopicname: Video Channel
+- topicname: PoC of a Database
+---

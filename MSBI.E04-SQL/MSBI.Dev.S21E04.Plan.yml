@@ -1,6 +1,12 @@
 ---
 topics:
-- topicname: Using Subqueries, Table Expressions, and the APPLY Operator
+- topicname: Using Set Operators
+  subtopics:
+   - subtopicname: UNION
+   - subtopicname: UNION ALL
+   - subtopicname: EXCEPT
+   - subtopicname: INTERSECT
+- topicname: Using Subqueries and Table Expressions
   subtopics:
    - subtopicname: Self-Contained Subqueries
    - subtopicname: Correlated Subqueries
@@ -8,29 +14,21 @@ topics:
    - subtopicname: Derived Tables
    - subtopicname: CTEs
    - subtopicname: recursive CTE
-   - subtopicname: Views and Inline Table-Valued Functions
    - subtopicname: APPLY
+- topicname: Using APPLY Operator
    - subtopicname: CROSS APPLY
-     task: true
    - subtopicname: OUTER APPLY
-- topicname: Using Set Operators
-  subtopics:
-   - subtopicname: UNION
-   - subtopicname: UNION ALL
-   - subtopicname: EXCEPT
-   - subtopicname: INTERSECT
 - topicname: Grouping and Windowing
   subtopics: 
+   - subtopicname: Aggregate Functions
    - subtopicname: Working with a Single Grouping Set
-     task: true
    - subtopicname: Working with Multiple Grouping Sets
-     task: true
 - topicname: Pivoting and Unpivoting Data
   subtopics:
    - subtopicname: Pivoting Data
    - subtopicname: Unpivoting Data
 - topicname: Entity-Attribute-Value pattern (EAV) Online shop
   subtopics:
-   - subtopicname: Problem with wide table. Sparse type of column
+   - subtopicname: Problem with wide table
    - subtopicname: EAV review pro and cons
 ---

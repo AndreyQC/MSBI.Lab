@@ -520,9 +520,7 @@ FROM Sales.Shippers AS S
         ON S.shipperid = O.shipperid
 GROUP BY S.shipperid, S.companyname;
 
---SELECT DISTINCT
---S.shipperid, S.companyname
---FROM Sales.Shippers AS S
+
 --Op2
 
 SELECT 

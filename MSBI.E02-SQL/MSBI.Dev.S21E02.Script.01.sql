@@ -12,14 +12,20 @@ SELECT [empid]
       ,[lastname]
       ,[region]
   FROM [TSQL2012].[HR].[Employees]
-  WHERE [region]=N'WA'
+  WHERE [region] = N'WA'
+
+SELECT [empid]
+      ,[lastname]
+      ,[region]
+  FROM [TSQL2012].[HR].[Employees]
+  WHERE [region] <> N'WA'
 
 --Null
 SELECT [empid]
       ,[lastname]
       ,[region]
   FROM [TSQL2012].[HR].[Employees]
-  WHERE [region]<>'WA'  OR [region] Is NUll
+  WHERE [region] <> 'WA' OR [region] IS NUll
 
 
 --Using T-SQL in a Relational Way
@@ -34,14 +40,12 @@ FROM HR.Employees;
 
 
 -- order in sets
--- result is relational
 SELECT
 	empid,
 	lastname
 FROM HR.Employees;
 
 -- let's make it ordered
---the result isnt relational
 SELECT
 	empid,
 	lastname
@@ -54,34 +58,6 @@ SELECT
 	lastname
 FROM HR.Employees
 ORDER BY 1;
-
-
---Aliases
-
---wrong way
-SELECT
-	empid,
-	firstname + ' ' + lastname
-FROM HR.Employees;
-
---wrong way
-SELECT
-	empid,
-	firstname + ' ' + lastname fullname
-FROM HR.Employees;
-
---right way
-SELECT
-	empid,
-	firstname + ' ' + lastname AS fullname
-FROM HR.Employees;
-
---right way
-SELECT
-	empid,
-	fullname =	firstname + ' ' + lastname
-FROM HR.Employees;
-
 
 
 
@@ -175,9 +151,6 @@ SELECT empid, firstname + N' ' + lastname
 FROM HR.Employees;
 
 
--- difference between T-SQL and SQL
-SELECT 10 AS col1, 'ABC' AS col2;
-
 
 
 --=========================================================================
@@ -194,7 +167,7 @@ SELECT @X;
 DECLARE @Y INT = 'AAA';
 SELECT @Y;
 
-
+99
 DECLARE @S1 VARCHAR(1) = 1;
 SELECT @S1;
 

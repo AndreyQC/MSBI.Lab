@@ -222,13 +222,24 @@ FROM
 
 
 
---Filtering Data with TOP
+--Sorting
 
---Determenistic
 SELECT orderid, orderdate, custid, empid
 FROM Sales.Orders
 ORDER BY orderdate DESC
 
+--Make it determenistic
+SELECT orderid, orderdate, custid, empid
+FROM Sales.Orders
+ORDER BY orderdate DESC, orderid DESC;
+
+--Sorting null values
+SELECT orderid, orderdate, custid, empid, shipregion
+FROM Sales.Orders
+ORDER BY shipregion, orderid;
+
+
+--Filtering Data with TOP
 
 SELECT orderid, orderdate, custid, empid
 FROM Sales.Orders
