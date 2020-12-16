@@ -34,4 +34,9 @@ topics:
   subtopics: 
    - subtopicname: Working with Data Types and Built-in Functions
    - subtopicname: Implicit Data Types Conversion
+- topicname: Database Design
+- topicname: Working with Git, Jira, Draw.io
+   - subtopicname: Using Sourcetree as a Git Client
+   - subtopicname: Getting Started with Jira board
+   - subtopicname: Using Draw.io (app.diagrams.net)
 ---

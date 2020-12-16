@@ -5,8 +5,6 @@ MSBI.Dev.S20E02.Script.01.sql
 USE [TSQL2012];
 GO
 
-SELECT 1; --For Git test
-
 --predicate
 SELECT [empid]
       ,[lastname]
@@ -67,13 +65,12 @@ Logical Query Processing Phases
 ================================================================================*/
 
 SELECT	country,
-        YEAR(hiredate) AS yearhired,
         COUNT(*) AS numemployees
 FROM HR.Employees
-     WHERE hiredate >= '20030101'
-     GROUP BY country, YEAR(hiredate)
-     HAVING COUNT(*) > 1
-     ORDER BY COUNT(*) DESC;
+WHERE hiredate >= '20030101'
+GROUP BY country
+HAVING COUNT(*) > 1
+ORDER BY COUNT(*) DESC;
 
 
 	--1 . Evaluate the FROM Clause
@@ -141,10 +138,6 @@ FROM HR.Employees;
 SELECT empid,  lastname = firstname
 FROM HR.Employees;
 
---redefine attribute name
-SELECT empid AS employeeid, firstname, lastname
-FROM HR.Employees;
-
 
 -- non relational
 SELECT empid, firstname + N' ' + lastname
@@ -164,10 +157,19 @@ SELECT @X;
 
 --Yes, but don't do it
 
+
+SELECT
+	empid,
+	lastname
+FROM HR.Employees
+WHERE empid = '1';
+--DON'T EVER DO IT!!!
+
+
 DECLARE @Y INT = 'AAA';
 SELECT @Y;
 
-99
+
 DECLARE @S1 VARCHAR(1) = 1;
 SELECT @S1;
 
@@ -176,16 +178,11 @@ DECLARE @S2 VARCHAR(1) = 1111;
 SELECT @S2;
 
 
-DECLARE @S3 VARCHAR(2) = 'AAA';
+DECLARE @S3 VARCHAR(2) = 'ABC';
 SELECT @S3;
 
 
---DON'T EVER DO IT!!!
-SELECT
-	empid,
-	lastname
-FROM HR.Employees
-WHERE empid = '1';
+
 
 
 --Simple arithmetic
@@ -201,21 +198,22 @@ SELECT 1 / 2 + 0.5;
 
 
 --Replicate and len functions
-DECLARE @V VARCHAR(MAX) = REPLICATE('A', 8000);
+DECLARE @V VARCHAR(MAX) = REPLICATE('A', 6000);
 SELECT
+	'A' + 'B',
 	@V,
 	LEN(@V)
 ;
 
 --Concatenation of long strings
 SELECT
-	LEN(REPLICATE('A', 8000))		+	LEN(REPLICATE('B', 8000)),
-	LEN(	REPLICATE('A', 8000)	+	REPLICATE('B', 8000)	)
+	LEN(REPLICATE('A', 6000))		+	LEN(REPLICATE('B', 6000)),
+	LEN(	REPLICATE('A', 6000)	+	REPLICATE('B', 6000)	)
 ;
 
 --Solution
 SELECT
-	LEN(	CAST('' AS VARCHAR(MAX))	+	REPLICATE('A', 8000)	+	REPLICATE('B', 8000)	)
+	LEN(	CAST('' AS VARCHAR(MAX))	+	REPLICATE('A', 6000)	+	REPLICATE('B', 6000)	)
 ;
 
 
