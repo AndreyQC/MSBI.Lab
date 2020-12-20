@@ -52,6 +52,17 @@ SELECT
 FROM Production.Products;
 
 
+
+--COALESCE vs ISNULL
+DECLARE
+	@x1 AS INT = 111,
+	@x2 AS INT = NULL,
+	@x3 AS INT = 333;
+
+SELECT COALESCE(@x1, @x3),	COALESCE(@x2, @x3);
+SELECT ISNULL(@x1, @x3),	ISNULL(@x2, @x3);
+
+
 --COALESCE(<exp1>, <exp2>, , <expn>)
 --is similar to the following.
 --CASE
@@ -103,19 +114,16 @@ WHERE region <> N'WA';
 
 SELECT empid, firstname, lastname, country, region, city
 FROM HR.Employees
-WHERE region <> N'WA'
-OR region IS NULL;
+WHERE region <> N'WA' OR region IS NULL;
 
+-- non-sarg
 SELECT empid, firstname, lastname, country, region, city
 FROM HR.Employees
 WHERE ISNULL(region,'') <> N'WA';
 
---sarg
 
---!!! include to task
 
-SELECT GETDATE(), GETUTCDATE()
-
+--Search Arguments (SARG)
 DECLARE @dt DATETIME = '2008-04-13 00:00:00.000';
 SELECT orderid, shippeddate, empid
 FROM Sales.Orders
@@ -124,7 +132,7 @@ WHERE COALESCE(shippeddate, '19000101') = COALESCE(@dt, '19000101');
 SELECT orderid, shippeddate, empid
 FROM Sales.Orders
 WHERE shippeddate = @dt
-OR (shippeddate IS NULL AND @dt IS NULL);
+	OR (shippeddate IS NULL AND @dt IS NULL);
 
 --Check plan
 SELECT orderid, shippeddate, empid
@@ -132,8 +140,14 @@ FROM Sales.Orders
 WHERE shippeddate = @dt OR @dt IS NULL;
 
 
---Filtering Character Data
 
+--Implicit conversion
+SELECT empid, firstname, lastname
+FROM HR.Employees
+WHERE empid = '1';
+
+
+--Varchar vs nvarchar
 SELECT empid, lastname
 FROM HR.Employees
 WHERE lastname = 'Davis';
@@ -164,6 +178,7 @@ WHERE lastname = N'Davis';
 DROP TABLE IF EXISTS HR.NewEmployees;
 
 
+--Filtering Character Data
 -- LIKE
 
 SELECT empid, lastname
@@ -177,18 +192,18 @@ WHERE lastname LIKE N'%d%';
 
 --Filtering Date and Time Data
 
+--Wrong
 SELECT orderid, orderdate, empid, custid
 FROM Sales.Orders
 WHERE orderdate = '02/12/07';
 
-
-
+--Correct
 SELECT orderid, orderdate, empid, custid
 FROM Sales.Orders
 WHERE orderdate = '20070212';	--YYYYMMDD
 
 
--- best way to select inerval
+-- best way to select interval
 
 SELECT orderid, orderdate, empid, custid
 FROM Sales.Orders
@@ -285,7 +300,7 @@ FROM Sales.Orders
 ORDER BY orderdate DESC, orderid DESC
 OFFSET 50 ROWS FETCH NEXT 25 ROWS ONLY;
 
-
+--The same as TOP
 SELECT orderid, orderdate, custid, empid
 FROM Sales.Orders
 ORDER BY orderdate DESC, orderid DESC
@@ -318,6 +333,20 @@ Combining Sets
 
 USE TSQL2012;
 
+-- cross join
+SELECT * FROM dbo.Nums;
+
+SELECT
+	D.n AS theday,
+	S.n AS shiftno
+FROM dbo.Nums AS D
+	CROSS JOIN dbo.Nums AS S
+WHERE D.n <= 7
+	AND S.N <= 3
+ORDER BY theday, shiftno;
+
+
+
 IF NOT EXISTS(SELECT 1 FROM Production.Suppliers WHERE companyname = N'Supplier XYZ')
 	INSERT INTO Production.Suppliers
 		(companyname, contactname, contacttitle, address, city, postalcode, country, phone)
@@ -328,17 +357,6 @@ SELECT * FROM Production.Suppliers
 
 --This supplier does not have any related products in the Production.Products table and is used in examples demonstrating nonmatches.
 
-
--- cross join
-
-SELECT
-	D.n AS theday,
-	S.n AS shiftno
-FROM dbo.Nums AS D
-	CROSS JOIN dbo.Nums AS S
-WHERE D.n <= 7
-	AND S.N <= 3
-ORDER BY theday, shiftno;
 
 -- inner join
 
@@ -368,12 +386,16 @@ FROM Production.Suppliers AS S
 --Outer Joins
 
 SELECT
-	E.empid,
-	E.firstname + N' ' + E.lastname AS emp,
-	M.firstname + N' ' + M.lastname AS mgr
-FROM HR.Employees AS E
-	LEFT OUTER JOIN HR.Employees AS M
-		ON E.mgrid = M.empid;
+    S.companyname AS supplier,
+    S.country,
+    P.productid,
+    P.productname,
+    P.unitprice
+FROM Production.Suppliers AS S
+    LEFT OUTER JOIN Production.Products AS P
+        ON S.supplierid = P.supplierid 
+WHERE S.country = N'Japan';
+
 
 
 SELECT
@@ -388,20 +410,8 @@ FROM Production.Suppliers AS S
 		AND S.country = N'Japan'
 ;
 
-SELECT
-    S.companyname AS supplier,
-    S.country,
-    P.productid,
-    P.productname,
-    P.unitprice
-FROM Production.Suppliers AS S
-    LEFT OUTER JOIN Production.Products AS P
-        ON S.supplierid = P.supplierid 
-WHERE S.country = N'Japan';
-
-
 --with outer joins, the ON and WHERE clauses play
---very different roles, and therefore, they arent interchangeable
+--very different roles, and therefore, they aren't interchangeable
 
 
 --multi joins
@@ -414,11 +424,26 @@ SELECT
 	P.unitprice,
 	C.categoryname
 FROM Production.Suppliers AS S
-	LEFT OUTER JOIN Production.Products AS P
+	LEFT JOIN Production.Products AS P
 		ON S.supplierid = P.supplierid
 	LEFT JOIN Production.Categories AS C
 		ON C.categoryid = P.categoryid
-;
+WHERE S.country = N'Japan';
+
+
+SELECT
+	S.companyname AS supplier,
+	S.country,
+	P.productid,
+	P.productname,
+	P.unitprice,
+	C.categoryname
+FROM Production.Suppliers AS S
+	LEFT JOIN Production.Products AS P
+		ON S.supplierid = P.supplierid
+	INNER JOIN Production.Categories AS C
+		ON C.categoryid = P.categoryid
+WHERE S.country = N'Japan';
 
 
 SELECT
@@ -455,5 +480,7 @@ FROM Production.Suppliers AS S
 ;
 
 
-
-
+--Clean up
+DELETE
+FROM Production.Suppliers
+WHERE companyname = N'Supplier XYZ';

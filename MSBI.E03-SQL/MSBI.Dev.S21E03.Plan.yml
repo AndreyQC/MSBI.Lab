@@ -25,6 +25,8 @@ topics:
    - subtopicname: Inner Joins
    - subtopicname: Outer Joins
    - subtopicname: Multi-Join Queries
+- topicname: Working with Git
+   - subtopicname: Using Tortoise as a Git Client
 - topicname: Database design
   subtopics: 
    - subtopicname: Online Shop use case scenario
