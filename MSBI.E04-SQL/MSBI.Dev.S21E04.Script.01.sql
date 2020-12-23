@@ -102,11 +102,9 @@ FROM Sales.Customers;
 --EXCEPT
 SELECT country, region, city
 FROM HR.Employees
---WHERE city= 'Redmond'
 EXCEPT
 SELECT country, region, city
 FROM Sales.Customers
---WHERE city= 'Redmond';
 
 
 --EXCEPT --compare with previous
@@ -218,7 +216,6 @@ the SQL Server Query Optimizer ignores the SELECT list of the subquery, and ther
 whatever you specify there will not affect optimization choices like index selection.
 */
 
--- add to task
 
 SELECT 
     custid,
@@ -286,6 +283,23 @@ SELECT
 FROM C
 WHERE rownum <= 2;
 
+
+
+WITH EmpsCTE AS(
+    SELECT empid, mgrid, firstname, lastname
+    FROM HR.Employees
+)
+SELECT
+	Emp.empid,
+	Emp.firstname,
+	Emp.lastname,
+	Emp.mgrid,
+	Mgr.firstname AS mgrfirstname,
+	Mgr.lastname AS mgrlastname
+FROM
+	EmpsCTE				AS Emp
+	LEFT JOIN EmpsCTE	AS Mgr		ON Mgr.[empid] = Emp.[mgrid]
+;
 
 
 /*---------------------------------------------------------------------------------------- 
@@ -365,7 +379,12 @@ WHERE mgrid = 2
 UNION ALL
 SELECT empid, mgrid, firstname, lastname, 3 AS distance
 FROM HR.Employees
-WHERE mgrid IN (3,5);
+WHERE mgrid IN (3,5)
+
+UNION ALL
+SELECT empid, mgrid, firstname, lastname, 3 AS distance
+FROM HR.Employees
+WHERE mgrid IN (4, 6, 7, 8, 9);
 
 
 
@@ -377,6 +396,21 @@ WHERE mgrid IN (3,5);
 --*************************************************************************
 -- CROSS APPLY
 --*************************************************************************
+
+
+IF NOT EXISTS(SELECT 1 FROM Production.Suppliers WHERE companyname = N'Supplier XYZ')
+	INSERT INTO Production.Suppliers
+		(companyname, contactname, contacttitle, address, city, postalcode, country, phone)
+	VALUES(N'Supplier XYZ', N'Jiru', N'Head of Security', N'42 Sekimai Musashino-shi',
+		N'Tokyo', N'01759', N'Japan', N'(02) 4311-2609');
+--This supplier does not have any related products in the Production.Products table and is used in examples demonstrating nonmatches.
+
+
+SELECT S.supplierid, S.companyname AS supplier
+FROM Production.Suppliers AS S
+WHERE S.country = N'Japan'
+
+
 --As a more practical example, suppose that you write a query that returns the two products
 --with the lowest unit prices for a specified suppliersay, supplier 1.
 
@@ -386,9 +420,6 @@ WHERE supplierid = 1
 ORDER BY unitprice, productid
 OFFSET 0 ROWS FETCH FIRST 2 ROWS ONLY;
 
-SELECT S.supplierid, S.companyname AS supplier
-FROM Production.Suppliers AS S
-WHERE S.country = N'Japan'
 
 SELECT S.supplierid, S.companyname AS supplier, A.*
 FROM Production.Suppliers AS S
@@ -398,10 +429,11 @@ FROM Production.Suppliers AS S
             FROM Production.Products AS P
             WHERE P.supplierid = S.supplierid
             ORDER BY unitprice, productid
-            OFFSET 0 ROWS FETCH FIRST 3 ROWS ONLY
+            OFFSET 0 ROWS FETCH FIRST 2 ROWS ONLY
         ) AS A
     WHERE S.country = N'Japan';
--- give as a task to reproduce without APPLY
+
+
 SELECT S.supplierid, S.companyname AS supplier, A.*
 FROM Production.Suppliers AS S
     OUTER APPLY  
@@ -410,10 +442,16 @@ FROM Production.Suppliers AS S
             FROM Production.Products AS P
             WHERE P.supplierid = S.supplierid
             ORDER BY unitprice, productid
-            OFFSET 0 ROWS FETCH FIRST 3 ROWS ONLY
+            OFFSET 0 ROWS FETCH FIRST 2 ROWS ONLY
         ) AS A
     WHERE S.country = N'Japan';
 
+
+
+--Clean up
+DELETE
+FROM Production.Suppliers
+WHERE companyname = N'Supplier XYZ';
 
 
 /*========================================================================================================================
@@ -467,6 +505,7 @@ SELECT
     COUNT(*) AS numorders,
     COUNT(shippeddate) AS shippedorders,  -- <- Attention ignore NULL
     COUNT(DISTINCT shippeddate) AS numshippedorders,
+	APPROX_COUNT_DISTINCT(shippeddate) AS aproxshippedorders,
     MIN(shippeddate) AS firstshipdate,
     MAX(shippeddate) AS lastshipdate,
     SUM(val) AS totalvalue
@@ -476,8 +515,7 @@ GROUP BY shipperid;
 --Note that the DISTINCT option is available not only to the COUNT function, but also to
 --other general set functions. However, its more common to use it with COUNT.
 
---APPROX_COUNT_DISTINCT in MS SQL 2019
-
+--STRING_AGG
 SELECT
 	*
 FROM
@@ -596,7 +634,7 @@ GROUP BY CUBE( shipperid, YEAR(shippeddate) );
 
 --ROLLUP
  -- use hierarchy
- SELECT shipcountry, shipregion, shipcity, COUNT(*) AS numorders
+SELECT shipcountry, shipregion, shipcity, COUNT(*) AS numorders
 FROM Sales.Orders
 GROUP BY ROLLUP( shipcountry, shipregion, shipcity )
 --( shipcountry, shipregion, shipcity )
@@ -638,20 +676,31 @@ GROUP BY ROLLUP( shipcountry, shipregion, shipcity );
 
 WITH PivotData AS
 (
-SELECT
-custid , -- grouping column
-shipperid, -- spreading column
-freight -- aggregation column
-FROM Sales.Orders
+	SELECT
+		custid , -- grouping column
+		shipperid, -- spreading column
+		freight -- aggregation column
+	FROM Sales.Orders
 )
 SELECT custid, [1], [2], [3], [4]
 FROM PivotData
 PIVOT(SUM(freight) FOR shipperid IN ([1],[2],[3],[4]) ) AS P;
 
-
+--Wrong
 SELECT custid, [1], [2], [3]
 FROM Sales.Orders
 PIVOT(SUM(freight) FOR shipperid IN ([1],[2],[3]) ) AS P;
+
+
+--Alternate option
+SELECT
+	custid,
+	SUM(CASE WHEN shipperid = 1 THEN freight END) AS [1],
+	SUM(CASE WHEN shipperid = 2 THEN freight END) AS [2],
+	SUM(CASE WHEN shipperid = 3 THEN freight END) AS [3],
+	SUM(CASE WHEN shipperid = 4 THEN freight END) AS [4]
+FROM Sales.Orders
+GROUP BY custid
 
 /*---------------------------------------------------------------------------------------- 
    - subtopicname: Unpivoting Data
@@ -662,21 +711,35 @@ IF OBJECT_ID('Sales.FreightTotals') IS NOT NULL DROP TABLE Sales.FreightTotals;
 GO
 WITH PivotData AS
 (
-SELECT
-    custid , -- grouping column
-    shipperid, -- spreading column
-    freight -- aggregation column
-FROM Sales.Orders
+	SELECT
+		custid , -- grouping column
+		shipperid, -- spreading column
+		freight -- aggregation column
+	FROM Sales.Orders
 )
 SELECT *
 INTO Sales.FreightTotals
 FROM PivotData
 PIVOT( SUM(freight) FOR shipperid IN ([1],[2],[3]) ) AS P;
+
 SELECT * FROM Sales.FreightTotals;
+
 
 SELECT custid, shipperid, freight
 FROM Sales.FreightTotals
 UNPIVOT( freight FOR shipperid IN([1],[2],[3]) ) AS U;
+
+
+--Alternate option
+WITH C AS(
+	SELECT custid, shipperid, CHOOSE(shipperid, [1], [2], [3]) AS freight
+	FROM Sales.FreightTotals
+		CROSS JOIN (VALUES (1), (2), (3)) AS v(shipperid)
+)
+SELECT custid, shipperid, freight
+FROM C
+WHERE freight IS NOT NULL
+
 
 IF OBJECT_ID('Sales.FreightTotals') IS NOT NULL DROP TABLE Sales.FreightTotals;
 
