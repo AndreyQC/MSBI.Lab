@@ -71,38 +71,48 @@ SELECT
 FROM Sales.OrderValues;
 
 
---Running total with frame
+--Determenistic and non-deterministic sorting
+SELECT 
+    custid,
+    orderid,
+	orderdate,
+    val,
+    SUM(val) OVER(PARTITION BY custid	ORDER BY orderdate, orderid) AS d_runningtotal,
+	SUM(val) OVER(PARTITION BY custid	ORDER BY orderdate) AS nd_runningtotal
+FROM Sales.OrderValues
+WHERE custid = 40;
+
+
+
+--ROWS vs RANGE
 SELECT 
     custid,
     orderid,
     orderdate,
     val,
+	SUM(val) OVER(
+		PARTITION BY custid		ORDER BY orderdate
+        RANGE	BETWEEN	UNBOUNDED PRECEDING    AND CURRENT ROW
+    ) AS rangetotal,
     SUM(val) OVER(
-		PARTITION BY custid		ORDER BY orderdate,	 orderid
-        ROWS BETWEEN	UNBOUNDED PRECEDING    AND CURRENT ROW
-    ) AS runningtotal
+		PARTITION BY custid		ORDER BY orderdate
+        ROWS	BETWEEN	UNBOUNDED PRECEDING    AND CURRENT ROW
+    ) AS rowstotal
+FROM Sales.OrderValues
+WHERE custid = 40;
+
+
+
+SELECT 
+    custid,
+    orderid,
+	orderdate,
+    val,
+    AVG(val) OVER(
+		PARTITION BY custid	ORDER BY orderdate, orderid
+		ROWS	BETWEEN	1 PRECEDING    AND 1 FOLLOWING
+	) AS avg3orders
 FROM Sales.OrderValues;
-
---
-WITH RunningTotals AS
-(
-    SELECT 
-        custid,
-        orderid,
-        orderdate, 
-        val,
-        SUM(val) OVER(PARTITION BY custid 	ORDER BY orderdate, orderid
-                        ROWS BETWEEN UNBOUNDED PRECEDING
-                        AND CURRENT ROW) 
-        AS runningtotal
-    FROM Sales.OrderValues
-)
-SELECT *
-FROM RunningTotals
-WHERE runningtotal > 10000.00;
-
-
-
 
 
 
@@ -112,16 +122,25 @@ WHERE runningtotal > 10000.00;
 --RANKING Function
 
 SELECT custid, orderid, val,
-    ROW_NUMBER() OVER(ORDER BY val) AS rownum,
-    RANK() OVER(ORDER BY val) AS rnk,
-    DENSE_RANK() OVER(ORDER BY val) AS densernk,
-    NTILE(100) OVER(ORDER BY val) AS ntile100
+    ROW_NUMBER()	OVER(ORDER BY val) AS rownum,
+    RANK()			OVER(ORDER BY val) AS rnk,
+    DENSE_RANK()	OVER(ORDER BY val) AS densernk,
+    NTILE(100)		OVER(ORDER BY val) AS ntile100
+FROM Sales.OrderValues;
+
+
+
+SELECT 
+    custid,
+    orderid,
+	orderdate,
+    val,
+    ROW_NUMBER() OVER(PARTITION BY custid	ORDER BY orderdate, orderid) AS runningtotal
 FROM Sales.OrderValues;
 
 
 --Count Distinct
 SELECT COUNT(DISTINCT orderdate) AS dcount FROM Sales.OrderValues;
-
 
 WITH RankedDates AS(
 	SELECT
@@ -164,8 +183,18 @@ ORDER BY rownum
 OFFSET 0 ROWS FETCH FIRST @high - @low + 1 ROWS ONLY;
 
 /*---------------------------------------------------------------------------------------- 
-   - subtopicname: Window Offset Functions
+   - subtopicname: Window Analytic Functions
 -----------------------------------------------------------------------------------------*/
+
+SELECT 
+    custid,
+    orderid,
+    orderdate,
+    val,
+    LEAD(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS next_val,
+    LAG(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS prev_val
+FROM Sales.OrderValues;
+
 
 SELECT 
     custid,
@@ -176,6 +205,7 @@ SELECT
     LAG(val,2) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS prev_val
 FROM Sales.OrderValues;
 
+
 SELECT 
     custid,
     orderid,
@@ -185,24 +215,26 @@ SELECT
     LAG(val,2,0) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS prev_val
 FROM Sales.OrderValues;
 
-SELECT 
-    custid,
-    orderid,
-    orderdate,
-    val,
-    val - LAG(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffprev
-    --val - LEAD(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffnext
-FROM Sales.OrderValues;
-
 
 SELECT 
     custid,
     orderid,
     orderdate,
     val,
-    --val - LAG(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffprev,
+    val - LAG(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffprev,
     val - LEAD(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS diffnext
 FROM Sales.OrderValues;
+
+
+
+SELECT 
+    custid,
+    orderid,
+    orderdate,
+    val,
+    FIRST_VALUE(val) OVER(PARTITION BY custid ORDER BY orderdate, orderid) AS first_val
+FROM Sales.OrderValues
+ORDER BY custid, orderdate, orderid;
 
 
 SELECT 
@@ -214,15 +246,15 @@ SELECT
             OVER
                 (
                     PARTITION BY custid ORDER BY orderdate, orderid
-                    ROWS BETWEEN UNBOUNDED PRECEDING
-                    AND CURRENT ROW
+                    --RANGE BETWEEN UNBOUNDED PRECEDING
+                    --AND CURRENT ROW
                 ) AS first_val,
     LAST_VALUE(val) 
             OVER
                 (
                     PARTITION BY custid ORDER BY orderdate, orderid
-                    ROWS BETWEEN CURRENT ROW
-                    AND UNBOUNDED FOLLOWING
+                    --RANGE BETWEEN CURRENT ROW
+                    --AND UNBOUNDED FOLLOWING
                 ) AS last_val
 FROM Sales.OrderValues
 ORDER BY custid, orderdate, orderid;
@@ -244,16 +276,20 @@ ORDER BY custid, orderdate, orderid;
 
 ========================================================================================================================*/
 
-CREATE TABLE Production.CategoriesTest1
+IF OBJECT_ID(N'Production.CategoriesTest', N'U') IS NOT NULL
+	DROP TABLE Production.CategoriesTest;
+GO
+
+CREATE TABLE Production.CategoriesTest
 (
-	categoryid INT IDENTITY(1,1) NOT NULL,
-	categoryname NVARCHAR(15) NOT NULL,
-	description NVARCHAR(200) NOT NULL
+	categoryid		INT				NOT NULL	IDENTITY(1,1),
+	categoryname	NVARCHAR(15)	NOT NULL,
+	description		NVARCHAR(200)	NOT NULL
 )
 GO
 
 --schemas
-SELECT TOP (10) categoryname FROM Production.Categories;
+SELECT TOP (10) categoryname FROM Production.CategoriesTest;
 
 -- create schema
 go
@@ -263,6 +299,36 @@ GO
 -- move table from schema to schema
 ALTER SCHEMA Sales TRANSFER Production.Categories;
 ALTER SCHEMA Production TRANSFER Sales.Categories;
+
+
+/*---------------------------------------------------------------------------------------- 
+   - subtopicname: altering table
+-----------------------------------------------------------------------------------------*/
+
+USE TSQL2012;
+GO
+
+DROP TABLE IF EXISTS Production.CategoriesTest;
+GO
+
+CREATE TABLE Production.CategoriesTest
+(
+	categoryid INT NOT NULL IDENTITY
+);
+GO
+
+-- add two columns
+ALTER TABLE Production.CategoriesTest
+	ADD categoryname NVARCHAR(15) NOT NULL;
+GO
+ALTER TABLE Production.CategoriesTest
+	ADD description NVARCHAR(200) NOT NULL;
+GO
+
+--Make the description column larger.
+ALTER TABLE Production.CategoriesTest
+	ALTER COLUMN description NVARCHAR(500);
+GO
 
 
 /*---------------------------------------------------------------------------------------- 
@@ -287,9 +353,14 @@ CREATE TABLE Sales.OrderDetails
 );
 
 ALTER TABLE Sales.OrderDetails
-ADD initialcost AS unitprice * qty
+	ADD initialcost AS unitprice * qty;
 
 
+SELECT * FROM Sales.OrderDetails;
+
+
+ALTER TABLE Sales.OrderDetails
+	DROP COLUMN IF EXISTS initialcost;
 
 /*---------------------------------------------------------------------------------------- 
    - subtopicname: Table Compression
@@ -303,54 +374,7 @@ WITH (DATA_COMPRESSION = ROW);
 
 -- rebuild 
 ALTER TABLE Sales.OrderDetails
-REBUILD WITH (DATA_COMPRESSION = PAGE);
-
-/*---------------------------------------------------------------------------------------- 
-   - subtopicname: altering table
------------------------------------------------------------------------------------------*/
-
-USE TSQL2012;
-GO
-
-DROP TABLE IF EXISTS Production.CategoriesTest;
-GO
-
-CREATE TABLE Production.CategoriesTest
-(
-categoryid INT NOT NULL IDENTITY
-);
-GO
--- add two columns
-ALTER TABLE Production.CategoriesTest
-ADD categoryname NVARCHAR(15) NOT NULL;
-GO
-ALTER TABLE Production.CategoriesTest
-ADD description NVARCHAR(200) NOT NULL;
-GO
-
---= try  to insert
-INSERT Production.CategoriesTest 
-(categoryid, categoryname, description)
-SELECT categoryid, categoryname, description
-FROM Production.Categories;
-GO
-
--- enable identity insert
-
-TRUNCATE TABLE Production.CategoriesTest;
-
-SET IDENTITY_INSERT Production.CategoriesTest ON;
-INSERT Production.CategoriesTest (categoryid, categoryname, description)
-SELECT categoryid, categoryname, description
-FROM Production.Categories;
-GO
-SET IDENTITY_INSERT Production.CategoriesTest OFF;
-GO
-
---Make the description column larger.
-ALTER TABLE Production.CategoriesTest
-ALTER COLUMN description VARCHAR(500);
-GO
+	REBUILD WITH (DATA_COMPRESSION = PAGE);
 
 
 /*========================================================================================================================
@@ -368,53 +392,69 @@ GO
 /*---------------------------------------------------------------------------------------- 
    - subtopicname: Primary Key Constraints
 -----------------------------------------------------------------------------------------*/
-DROP TABLE IF EXISTS Production.CategoriesTest3;
+DROP TABLE IF EXISTS Production.CategoriesTest;
 GO
 
-CREATE TABLE Production.CategoriesTest3
+--Bad
+CREATE TABLE Production.CategoriesTest
 (
-    categoryid INT NOT NULL IDENTITY,
+    categoryid INT NOT NULL PRIMARY KEY,
     categoryname NVARCHAR(15) NOT NULL,
-    description NVARCHAR(200) NOT NULL,
-    CONSTRAINT PK_CategoriesTest3 PRIMARY KEY(categoryid)
+    description NVARCHAR(200) NOT NULL
 );
 
-SET IDENTITY_INSERT [Production].[CategoriesTest3] ON;
-INSERT INTO [Production].[CategoriesTest3]
+
+DROP TABLE IF EXISTS Production.CategoriesTest;
+GO
+
+--Good
+CREATE TABLE Production.CategoriesTest
+(
+    categoryid INT NOT NULL CONSTRAINT PK_CategoriesTest PRIMARY KEY,
+    categoryname NVARCHAR(15) NOT NULL,
+    description NVARCHAR(200) NOT NULL
+);
+
+
+DROP TABLE IF EXISTS Production.CategoriesTest;
+GO
+
+--Good
+CREATE TABLE Production.CategoriesTest
+(
+    categoryid INT NOT NULL,
+    categoryname NVARCHAR(15) NOT NULL,
+    description NVARCHAR(200) NOT NULL,
+    CONSTRAINT PK_CategoriesTest PRIMARY KEY(categoryid)
+);
+
+INSERT INTO [Production].[CategoriesTest]
            ([categoryid],[categoryname],[description])
      VALUES
            (1,'testa','tet')
-SET IDENTITY_INSERT [Production].[CategoriesTest3] OFF;
 
 
 -- add to existing table
 ALTER TABLE Production.Categories
-ADD CONSTRAINT PK_Categories PRIMARY KEY(categoryid);
-GO
-
-
-DROP TABLE IF EXISTS Production.CategoriesTest3;
+	ADD CONSTRAINT PK_Categories PRIMARY KEY(categoryid);
 GO
 
 
 --PK is not only over clustered index. Clustered index is not only unique
-DROP TABLE IF EXISTS Production.CategoriesTest4;
+DROP TABLE IF EXISTS Production.CategoriesTest;
 GO
 
-CREATE TABLE Production.CategoriesTest4
+CREATE TABLE Production.CategoriesTest
 (
     categoryid INT NOT NULL IDENTITY,
     categoryname NVARCHAR(15) NOT NULL,
     description NVARCHAR(200) NOT NULL,
-    CONSTRAINT PK_CategoriesTest4 PRIMARY KEY NONCLUSTERED(categoryid)
+    CONSTRAINT PK_CategoriesTest PRIMARY KEY NONCLUSTERED(categoryid)
 );
 GO
 
-CREATE CLUSTERED INDEX [CI_Production_CategoriesTest4]	--Non unique!
-	ON [Production].[CategoriesTest4] ([categoryname]);
-GO
-
-DROP TABLE IF EXISTS Production.CategoriesTest4;
+CREATE CLUSTERED INDEX [CI_Production_CategoriesTest]	--Non unique!
+	ON [Production].[CategoriesTest] ([categoryname]);
 GO
 
 
@@ -432,11 +472,25 @@ WHERE object_id = OBJECT_ID('Production.Categories') AND name = 'PK_Categories';
    - subtopicname: Unique Constraints
 -----------------------------------------------------------------------------------------*/
 
+DROP TABLE IF EXISTS Production.CategoriesTest;
+GO
+
+CREATE TABLE Production.CategoriesTest
+(
+    categoryid INT NOT NULL,
+    categoryname NVARCHAR(15) NOT NULL	CONSTRAINT UC_CategoriesTest_categoryname UNIQUE,
+    description NVARCHAR(200) NOT NULL
+);
+
 ALTER TABLE Production.Categories
 	ADD CONSTRAINT UC_Categories UNIQUE (categoryname);
 GO
 --The unique constraint does not require the column to be NOT NULL. You can allow NULL in
 --a column and still have a unique constraint, but only one row can be NULL.
+
+
+DROP TABLE IF EXISTS Production.CategoriesTest;
+GO
 
 
 SELECT *
@@ -450,8 +504,8 @@ WHERE type = 'UQ';
 USE TSQL2012
 GO
 ALTER TABLE Production.Products WITH CHECK
-ADD CONSTRAINT FK_Products_Categories FOREIGN KEY(categoryid)
-REFERENCES Production.Categories (categoryid)
+	ADD CONSTRAINT FK_Products_Categories FOREIGN KEY(categoryid)
+	REFERENCES Production.Categories (categoryid)
 GO
 
 --
@@ -465,8 +519,8 @@ WHERE name = 'FK_Products_Categories';
 
 
 ALTER TABLE Production.Products WITH CHECK
-ADD CONSTRAINT CHK_Products_unitprice
-CHECK (unitprice>=0);
+	ADD CONSTRAINT CK_Products_unitprice
+	CHECK (unitprice>=0);
 GO
 
 --
