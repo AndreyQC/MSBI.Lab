@@ -1,792 +1,1069 @@
 /*=========================================
-MSBI.DEV.S20E06.SCRIPT
+MSBI.DEV.COURSE.S20E08.SCRIPT
 =========================================*/
 
 USE [TSQL2012];
+GO
 
 /*=========================================
-XML Returning Results As XML with FOR XML
+Working with variables
 =========================================*/
 
- --start
-SELECT 
-     Customer.custid,
-     Customer.companyname,
-     [Order].orderid,
-     [Order].orderdate
-FROM Sales.Customers AS Customer
-     INNER JOIN Sales.Orders AS [Order]
-          ON Customer.custid = [Order].custid
-WHERE 
-          Customer.custid <= 2
-     AND [Order].orderid %2 = 0
-ORDER BY Customer.custid, [Order].orderid
-FOR XML RAW;
+-- Populate by single row
+DECLARE @ProductId INT = -1;
+SET @ProductId	= (SELECT productid FROM [Production].[Products] WHERE [productname] = N'Product HHYDP');
 
-SELECT 
-     Customer.custid,
-     Customer.companyname,
-     [Order].orderid,
-     [Order].orderdate
-FROM Sales.Customers AS Customer
-     INNER JOIN Sales.Orders AS [Order]
-          ON Customer.custid = [Order].custid
-WHERE 
-          Customer.custid <= 2
-     AND [Order].orderid %2 = 0
-ORDER BY Customer.custid, [Order].orderid
-FOR XML AUTO, ELEMENTS, ROOT('CustomersOrders');
-
-
--- add root
-
---FOR XML AUTO
-
-WITH XMLNAMESPACES('TK461-CustomersOrders' AS co)
-SELECT 
-     [co:Customer].custid AS [co:custid],
-     [co:Customer].companyname AS [co:companyname],
-     [co:Order].orderid AS [co:orderid],
-     [co:Order].orderdate AS [co:orderdate]
-FROM Sales.Customers AS [co:Customer]
-     INNER JOIN Sales.Orders AS [co:Order]
-          ON [co:Customer].custid = [co:Order].custid
-WHERE 
-          [co:Customer].custid <= 2
-     AND [co:Order].orderid %2 = 0
-ORDER BY [co:Customer].custid, [co:Order].orderid
-FOR XML AUTO, ELEMENTS, ROOT('CustomersOrders');
-
-
-
-WITH XMLNAMESPACES('TK461-CustomersOrders' AS co)
-SELECT 
-     [co:Customer].custid AS [co:custid],
-     [co:Customer].companyname AS [co:companyname],
-     [co:Order].orderid AS [co:orderid],
-     [co:Order].orderdate AS [co:orderdate]
-FROM Sales.Customers AS [co:Customer]
-     INNER JOIN Sales.Orders AS [co:Order]
-          ON [co:Customer].custid = [co:Order].custid
-WHERE 
-          [co:Customer].custid <= 2
-     AND [co:Order].orderid %2 = 0
-ORDER BY [co:Customer].custid, [co:Order].orderid
-FOR XML AUTO,  ROOT('CustomersOrders');
-
-
-WITH XMLNAMESPACES('TK461-CustomersOrders' AS co)
-SELECT 
-     [co:Customer].custid AS [co:custid],
-     [co:Customer].companyname AS [co:companyname],
-     [co:Order].orderid AS [co:orderid],
-     [co:Order].orderdate AS [co:orderdate]
-FROM Sales.Customers AS [co:Customer]
-     INNER JOIN Sales.Orders AS [co:Order]
-          ON [co:Customer].custid = [co:Order].custid
-WHERE 
-          [co:Customer].custid <= 2
-     AND [co:Order].orderid %2 = 0
-ORDER BY [co:Customer].custid, [co:Order].orderid
-FOR XML RAW,  ROOT('CustomersOrders');
-
-
--- create XSD
-SELECT 
-     [Customer].custid AS [custid],
-     [Customer].companyname AS [companyname],
-     [Order].orderid AS [orderid],
-     [Order].orderdate AS [orderdate]
-FROM Sales.Customers AS [Customer]
-     INNER JOIN Sales.Orders AS [Order]
-          ON [Customer].custid = [Order].custid
-WHERE 1 = 2
-FOR XML AUTO, ELEMENTS,
-XMLSCHEMA('TK461-CustomersOrders');
-
---FOR XML PATH
-
-SELECT 
-     Customer.custid AS [@custid],
-     Customer.companyname AS [companyname]
-FROM Sales.Customers AS Customer
-WHERE Customer.custid <= 2
-ORDER BY Customer.custid
-FOR XML PATH ('Customer'), ROOT('Customers');
-
-
--- nested for xml path
-SELECT 
-     Customer.custid AS [@custid],
-     Customer.companyname AS [@companyname],
-     (
-          SELECT 
-               [Order].orderid AS [@orderid],
-               [Order].orderdate AS [@orderdate]
-          FROM Sales.Orders AS [Order]
-          WHERE Customer.custid = [Order].custid
-               AND [Order].orderid %2 = 0
-          ORDER BY [Order].orderid
-          FOR XML PATH('Order'), TYPE
-     )
-FROM Sales.Customers AS Customer
-WHERE Customer.custid <= 2
-ORDER BY Customer.custid
-FOR XML PATH('Customer'), ROOT('Customers');
-
-
-
---=====================================================================================================
---Shredding XML to Tables
---=====================================================================================================
-DECLARE @DocHandle AS INT;
-DECLARE @XmlDocument AS NVARCHAR(1000);
-SET @XmlDocument = N'
-     <CustomersOrders>
-          <Customer custid="1">
-          <companyname>Customer NRZBB</companyname>
-                    <Order orderid="10692">
-                    <orderdate>2007-10-03T00:00:00</orderdate>
-                    </Order>
-                    <Order orderid="10702">
-                    <orderdate>2007-10-13T00:00:00</orderdate>
-                    </Order>
-                    <Order orderid="10952">
-                    <orderdate>2008-03-16T00:00:00</orderdate>
-                    </Order>
-          </Customer>
-            <Customer custid="2">
-            <companyname>Customer MLTDN</companyname>
-                   <Order orderid="10308">
-                   <orderdate>2006-09-18T00:00:00</orderdate>
-                   </Order>
-                   <Order orderid="10926">
-                   <orderdate>2008-03-04T00:00:00</orderdate>
-                   </Order>
-          </Customer>
-     </CustomersOrders>';
--- Create an internal representation
-EXEC sys.sp_xml_preparedocument @DocHandle OUTPUT, @XmlDocument;
-
--- Attribute-centric mapping
-SELECT *
-FROM OPENXML (@DocHandle, '/CustomersOrders/Customer',1)
-WITH (custid INT, companyname NVARCHAR(40));
--- Element-centric mapping
-SELECT *
-FROM OPENXML (@DocHandle, '/CustomersOrders/Customer',2)
-WITH (custid INT, companyname NVARCHAR(40));
--- Attribute- and element-centric mapping
--- Combining flag 8 with flags 1 and 2
-SELECT *
-FROM OPENXML (@DocHandle, '/CustomersOrders/Customer',3)
-WITH (custid INT, companyname NVARCHAR(40));
-
--- Remove the DOM
-EXEC sys.sp_xml_removedocument @DocHandle;
+SELECT @ProductId;
 GO
 
---=====================================================================================================
---Querying XML Data with XQuery
---=====================================================================================================
---XQuery
+DECLARE @ProductId INT = -1;
+SELECT @ProductId	= productid FROM [Production].[Products] WHERE [productname] = N'Product HHYDP';
 
-DECLARE @x AS XML;
-SET @x=N'
-<root>
-	<a>1
-        <c>3</c>
-        <d>4</d>
-	</a>
-	<b>2</b>
-</root>';
+SELECT @ProductId;
+GO
+
+--Multiple variables
+
+--Wrong
+DECLARE
+	@ProductId INT = -1,
+	@CategoryId INT = -1;
+
+SET @ProductId	= (SELECT productid FROM [Production].[Products] WHERE [productname] = N'Product HHYDP');
+SET @CategoryId	= (SELECT categoryid FROM [Production].[Products] WHERE [productname] = N'Product HHYDP');
+
+SELECT @ProductId, @CategoryId;
+GO
+
+--Good
+DECLARE
+	@ProductId INT = -1,
+	@CategoryId INT = -1;
+
 SELECT
-@x.query('*') AS Complete_Sequence,
-@x.query('data(*)') AS Complete_Data,
-@x.query('data(root/a/c)') AS Element_c_Data;
+	@ProductId	= productid,
+	@CategoryId = categoryid
+FROM [Production].[Products]
+WHERE [productname] = N'Product HHYDP';
 
-
--- XQuery
-
-DECLARE @xx AS XML;
-SET @xx='
-<CustomersOrders xmlns:co="TK461-CustomersOrders">
-	<co:Customer co:custid="1" co:companyname="Customer NRZBB">
-		<co:Order co:orderid="10692" co:orderdate="2007-10-03T00:00:00" />
-		<co:Order co:orderid="10702" co:orderdate="2007-10-13T00:00:00" />
-		<co:Order co:orderid="10952" co:orderdate="2008-03-16T00:00:00" />
-	</co:Customer>
-	<co:Customer co:custid="2" co:companyname="Customer MLTDN">
-		<co:Order co:orderid="10308" co:orderdate="2006-09-18T00:00:00" />
-		<co:Order co:orderid="10926" co:orderdate="2008-03-04T00:00:00" />
-	</co:Customer>
-</CustomersOrders>';
--- Namespace in prolog of XQuery
-SELECT @xx.query('(: explicit namespace :) declare namespace co="TK461-CustomersOrders";
-//co:Customer[1]/*') AS [Explicit namespace];
--- Default namespace for all elements in prolog of XQuery
-SELECT @xx.query('
-(: default namespace :)
-declare default element namespace "TK461-CustomersOrders";
-//Customer[1]/*') AS [Default element namespace];
--- Namespace defined in WITH clause of T-SQL SELECT
-WITH XMLNAMESPACES('TK461-CustomersOrders' AS co)
-SELECT @xx.query('
-(: namespace declared in T-SQL :)
-//co:Customer[1]/*') AS [Namespace in WITH clause];
-
-
--- using XQuery functions
-DECLARE @x3 AS XML;
-SET @x3='
-<CustomersOrders>
-	<Customer custid="1" companyname="Customer NRZBB">
-		<Order orderid="10692" orderdate="2007-10-03T00:00:00" />
-		<Order orderid="10702" orderdate="2007-10-13T00:00:00" />
-		<Order orderid="10952" orderdate="2008-03-16T00:00:00" />
-	</Customer>
-	<Customer custid="2" companyname="Customer MLTDN">
-		<Order orderid="10308" orderdate="2006-09-18T00:00:00" />
-		<Order orderid="10926" orderdate="2008-03-04T00:00:00" />
-	</Customer>
-</CustomersOrders>';
-SELECT @x3.query('
-				for $i in //Customer
-				return
-				<OrdersInfo>
-				{ $i/@companyname }
-				<NumberOfOrders>
-				{ count($i/Order) }
-				</NumberOfOrders>
-				<LastOrder>
-				{ max($i/Order/@orderid) }
-				</LastOrder>
-				</OrdersInfo>
-');
-
-
-DECLARE @x4 AS XML;
-SET @x4 = N'
-<CustomersOrders>
-	<Customer custid="1">
-		<!-- Comment 111 -->
-		<companyname>Customer NRZBB</companyname>
-		<Order orderid="10692">
-		<orderdate>2007-10-03T00:00:00</orderdate>
-		</Order>
-		<Order orderid="10702">
-		<orderdate>2007-10-13T00:00:00</orderdate>
-		</Order>
-		<Order orderid="10952">
-		<orderdate>2008-03-16T00:00:00</orderdate>
-		</Order>
-	</Customer>
-<Customer custid="2">
-<!-- Comment 222 -->
-<companyname>Customer MLTDN</companyname>
-<Order orderid="10308">
-<orderdate>2006-09-18T00:00:00</orderdate>
-</Order>
-<Order orderid="10952">
-<orderdate>2008-03-04T00:00:00</orderdate>
-</Order>
-</Customer>
-</CustomersOrders>';
-
---Return the second customer who has at least one order. The result should be similar to
---the abbreviated result here.
-SELECT @x4.query('(/CustomersOrders/Customer/
-Order/parent::Customer)[2]')
-AS [ 2nd Customer with at least one Order];
-
-
-
--- update
-SET @x4.modify('replace value of
-/CustomersOrders[1]/Customer[1]/companyname[1]/text()[1]
-with "New Company Name"');
-SELECT @x4.value('(/CustomersOrders/Customer/companyname)[1]',
-'NVARCHAR(20)')
-AS [First Customer New Name];
-
-select @x4
-
---============================================================================================
---Using the XML Data Type for Dynamic Schema
---============================================================================================
-ALTER TABLE Production.Products
-ADD additionalattributes XML NULL;
-
-
--- Auxiliary tables
-CREATE TABLE dbo.Beverages
-(
-percentvitaminsRDA INT
-);
-CREATE TABLE dbo.Condiments
-(
-shortdescription NVARCHAR(50)
-);
+SELECT @ProductId, @CategoryId;
 GO
--- Store the Schemas in a Variable and Create the Collection
-DECLARE @mySchema NVARCHAR(MAX);
-SET @mySchema = N'';
-SET @mySchema = @mySchema +
-(SELECT *
-FROM Beverages
-FOR XML AUTO, ELEMENTS, XMLSCHEMA('Beverages'));
-SET @mySchema = @mySchema +
-(SELECT *
-FROM Condiments
-FOR XML AUTO, ELEMENTS, XMLSCHEMA('Condiments'));
-SELECT CAST(@mySchema AS XML);
 
-CREATE XML SCHEMA COLLECTION dbo.ProductsAdditionalAttributes AS @mySchema;
+
+-- Populate by multiple rows
+DECLARE @ProductId INT = -1;
+SET @ProductId	= (SELECT productid FROM [Production].[Products] WHERE [supplierid] = 1);
+
+SELECT @ProductId;
 GO
+
+DECLARE @ProductId INT = -1;
+SELECT @ProductId	= productid FROM [Production].[Products] WHERE [supplierid] = 1;
+
+SELECT @ProductId;
+GO
+
+
+-- Try to populate by empty result set
+DECLARE @ProductId INT = -1;
+SET @ProductId	= (SELECT productid FROM [Production].[Products] WHERE [productname] = N'Product ABC');
+
+SELECT @ProductId;
+GO
+
+DECLARE @ProductId INT = -1;
+SELECT @ProductId	= productid FROM [Production].[Products] WHERE [productname] = N'Product ABC';
+
+SELECT @ProductId;
+GO
+
+
+
+-- Use the feature
+DECLARE @AllProducts NVARCHAR(MAX) = N'';
+SELECT
+	@AllProducts	= @AllProducts + [productname] + N','
+FROM
+	[Production].[Products]
+ORDER BY
+	[productname]
+;
+SELECT @AllProducts;
+
+--Alternate approach (SQL 2017)
+SELECT
+	STRING_AGG([productname], N',')
+FROM
+	[Production].[Products]
+;
+
+--Alternate approach (before SQL 2017)
+SELECT
+	[productname] + N',' AS 'data()'
+FROM
+	[Production].[Products]
+ORDER BY
+	[productname]
+FOR XML PATH ('')
+;
+
+
+
+/*=========================================
+Inserting Data
+=========================================*/
+
+
+/*=========================================
+Prepare sample data
+=========================================*/
+
+
+----------------drop table---------------------------
+USE TSQL2012;
+
+DROP TABLE IF EXISTS Sales.MyOrders;
+GO
+----------------create table---------------------------
+CREATE TABLE Sales.MyOrders
+(
+	orderid INT NOT NULL IDENTITY(1, 1)	CONSTRAINT PK_MyOrders_orderid PRIMARY KEY,
+	custid INT NOT NULL,
+	empid INT NOT NULL,
+	orderdate DATE NOT NULL CONSTRAINT DF_MyOrders_orderdate DEFAULT (CAST(GETDATE() AS DATE)),
+	shipcountry NVARCHAR(15) NOT NULL,
+	freight MONEY NOT NULL
+);
+
+SELECT * FROM Sales.MyOrders;
+
+/*=========================================
+INSERT VALUES
+=========================================*/
+INSERT 
+    INTO Sales.MyOrders
+    (custid, empid, orderdate, shipcountry, freight)
+VALUES  (2, 19, '20120620', N'USA', 30.00);
+
+-- will fail
+INSERT 
+    INTO Sales.MyOrders
+    (orderid, custid, empid, orderdate, shipcountry, freight)
+VALUES  (2, 2, 19, '20120620', N'USA', 30.00);
+
+SET IDENTITY_INSERT Sales.MyOrders ON;
+INSERT 
+    INTO Sales.MyOrders
+    (orderid, custid, empid, orderdate, shipcountry, freight)
+VALUES  (2, 2, 19, '20120620', N'USA', 30.00);
+SET IDENTITY_INSERT Sales.MyOrders OFF;
+
+SELECT * FROM Sales.MyOrders;
+
+/*=========================================
+INSERT VALUES Server uses the default expression for orderdate
+=========================================*/
+INSERT INTO Sales.MyOrders(custid, empid, shipcountry, freight)
+VALUES(3, 11, N'USA', 10.00);
+
+-- or use default key word
+INSERT INTO Sales.MyOrders(custid, empid, orderdate, shipcountry, freight)
+VALUES(3, 17, DEFAULT, N'RUS', 30.00);
+
+SELECT * FROM Sales.MyOrders;
+
+/*=========================================
+The INSERT VALUES with multiple rows
+=========================================*/
+INSERT 
+    INTO Sales.MyOrders (custid, empid, orderdate, shipcountry, freight)
+ VALUES
+    (2, 11, '20120620', N'USA', 50.00),
+    (5, 13, '20120620', N'USA', 40.00),
+    (7, 17, '20120620', N'USA', 45.00);
+
+SELECT *
+FROM Sales.MyOrders;
+
+--**************************************************************************************************************
+--INSERT SELECT
+--**************************************************************************************************************
+SET IDENTITY_INSERT Sales.MyOrders ON;
+
+INSERT 
+    INTO Sales.MyOrders(orderid, custid, empid, orderdate, shipcountry, freight)
+SELECT orderid, custid, empid, orderdate, shipcountry, freight
+    FROM Sales.Orders
+    WHERE shipcountry = N'Norway';
+
+SET IDENTITY_INSERT Sales.MyOrders OFF;
+
+
+SELECT *
+FROM Sales.MyOrders;
+
+
+INSERT INTO Sales.MyOrders(custid, empid, shipcountry, freight)
+VALUES(3, 11, N'USA', 10.00);
+
+
+
+--ROWCOUNT
+DECLARE @RC INT;
+
+INSERT 
+    INTO Sales.MyOrders(custid, empid, orderdate, shipcountry, freight)
+SELECT custid, empid, orderdate, shipcountry, freight
+    FROM Sales.Orders
+    WHERE shipcountry = N'Brazil';
+
+SET @RC = @@ROWCOUNT;
+SELECT @RC;
+
+
+--**************************************************************************************************************
+--INSERT EXEC
+--**************************************************************************************************************
+
+
+
+
+/*=========================================
+create SP
+=========================================*/
+IF OBJECT_ID('Sales.usp_OrdersForCountry', 'P') IS NOT NULL
+DROP PROC Sales.usp_OrdersForCountry;
+GO
+CREATE PROC Sales.usp_OrdersForCountry
+@country AS NVARCHAR(15)
+AS
+    SELECT  orderid, custid, empid, orderdate, shipcountry, freight
+    FROM Sales.Orders
+    WHERE shipcountry = @country;
+GO
+
+EXEC Sales.usp_OrdersForCountry N'Portugal';
+
+
+SET IDENTITY_INSERT Sales.MyOrders ON;
+
+INSERT 
+	INTO Sales.MyOrders(orderid, custid, empid, orderdate, shipcountry, freight)
+EXEC Sales.usp_OrdersForCountry
+		@country = N'Portugal';
+
+SET IDENTITY_INSERT Sales.MyOrders OFF;
+
+
+SELECT *
+FROM Sales.MyOrders;
+
+
+GO
+/*=========================================
+ wrong SP
+=========================================*/
+CREATE OR ALTER PROC Sales.usp_OrdersForCountry
+@country AS NVARCHAR(15)
+AS
+    SELECT  'sdsd' col12, orderid, custid, empid, orderdate, shipcountry, freight
+    FROM Sales.Orders
+    WHERE shipcountry = @country;
+GO
+/*=========================================
+
+=========================================*/
+
+EXEC Sales.usp_OrdersForCountry N'Portugal';
+
+
+SET IDENTITY_INSERT Sales.MyOrders ON;
+
+INSERT 
+	INTO Sales.MyOrders(orderid, custid, empid, orderdate, shipcountry, freight)
+EXEC Sales.usp_OrdersForCountry
+		@country = N'Portugal';
+
+SET IDENTITY_INSERT Sales.MyOrders OFF;
+
+
+DROP PROC IF EXISTS Sales.usp_OrdersForCountry;
+
+--**************************************************************************************************************
+--SELECT INTO
+--**************************************************************************************************************
+
+DROP TABLE IF EXISTS Sales.MyOrders;
+
+SELECT 
+    orderid,
+    custid,
+    orderdate,
+    shipcountry,
+    freight
+INTO Sales.MyOrders
+FROM Sales.Orders
+WHERE shipcountry = N'Norway';
+
+SELECT *
+FROM Sales.MyOrders;
+
+/*=========================================
+to control datatypes in created table
+=========================================*/
+
+DROP TABLE IF EXISTS Sales.MyOrders;
+
+SELECT
+    orderid + 0 AS orderid,					-- get rid of IDENTITY property
+    ISNULL(custid, -1) AS custid,			-- make column NOT NULL
+    empid,
+    CAST(orderdate AS DATE) AS orderdate,	-- change data type
+    shipcountry,
+	freight
+INTO Sales.MyOrders
+FROM Sales.Orders
+WHERE shipcountry = N'Norway';
+
+
+
+DROP TABLE IF EXISTS Sales.MyOrders;
+
+SELECT
+    ISNULL(orderid + 0, -1) AS orderid, -- get rid of IDENTITY property
+    ISNULL(custid, -1) AS custid,		-- make column NOT NULL
+    empid,
+    ISNULL(CAST(orderdate AS DATE), '19000101') AS orderdate, -- change data type
+    shipcountry, freight
+INTO Sales.MyOrders
+FROM Sales.Orders
+WHERE shipcountry = N'Norway';
+
+/*=========================================
+add constraint if it needs
+SELECT INTO does not copy constraints from the source table,
+=========================================*/
+ALTER TABLE Sales.MyOrders
+	ADD CONSTRAINT PK_MyOrders PRIMARY KEY(orderid);
+
+
+/*=========================================
+clean up
+=========================================*/
+DROP TABLE IF EXISTS Sales.MyOrders;
+
+
+
+--**************************************************************************************************************
+--UPDATE
+--**************************************************************************************************************
+
+/*=========================================
+prepare Sample Data
+=========================================*/
+IF OBJECT_ID('Sales.MyOrderDetails', 'U') IS NOT NULL
+	DROP TABLE Sales.MyOrderDetails;
+
+IF OBJECT_ID('Sales.MyOrders', 'U') IS NOT NULL
+	DROP TABLE Sales.MyOrders;
+
+IF OBJECT_ID('Sales.MyCustomers', 'U') IS NOT NULL
+	DROP TABLE Sales.MyCustomers;
+
+SELECT * INTO Sales.MyCustomers FROM Sales.Customers;
+
+ALTER TABLE Sales.MyCustomers
+	ADD CONSTRAINT PK_MyCustomers PRIMARY KEY(custid);
+
+SELECT * INTO Sales.MyOrders FROM Sales.Orders;
+
+ALTER TABLE Sales.MyOrders
+	ADD CONSTRAINT PK_MyOrders PRIMARY KEY(orderid);
+
+SELECT * INTO Sales.MyOrderDetails FROM Sales.OrderDetails;
+
+ALTER TABLE Sales.MyOrderDetails
+	ADD CONSTRAINT PK_MyOrderDetails PRIMARY KEY(orderid, productid);
+
+
+/*=========================================
+
+=========================================*/
+
+SELECT *
+FROM Sales.MyOrderDetails
+WHERE orderid = 10251;
+
+/*=========================================
+first update
+=========================================*/
+UPDATE Sales.MyOrderDetails
+SET discount += 0.05
+WHERE orderid = 10251;
+
+SELECT *
+FROM Sales.MyOrderDetails
+WHERE orderid = 10251;
+
+/*=========================================
+roll back changes
+=========================================*/
+UPDATE Sales.MyOrderDetails
+SET discount -= 0.05
+WHERE orderid = 10251;
+
+
+/*=========================================
+using update with join
+=========================================*/
+
+SELECT OD.*
+FROM Sales.MyCustomers AS C
+    INNER JOIN Sales.MyOrders AS O
+        ON C.custid = O.custid
+    INNER JOIN Sales.MyOrderDetails AS OD
+        ON O.orderid = OD.orderid
+WHERE C.country = N'Norway';
+-- OD (16 rows affected)
+
+
+
+UPDATE OD
+SET OD.discount += 0.05
+FROM Sales.MyCustomers AS C
+    INNER JOIN Sales.MyOrders AS O
+       ON C.custid = O.custid
+    INNER JOIN Sales.MyOrderDetails AS OD
+        ON O.orderid = OD.orderid
+WHERE C.country = N'Norway';
+
+-- review result
+SELECT OD.*
+FROM Sales.MyCustomers AS C
+    INNER JOIN Sales.MyOrders AS O
+         ON C.custid = O.custid
+    INNER JOIN Sales.MyOrderDetails AS OD
+         ON O.orderid = OD.orderid
+WHERE C.country = N'Norway';
+
+
+-- experiment
+
+SELECT C.*
+FROM Sales.MyCustomers AS C
+    INNER JOIN Sales.MyOrders AS O
+       ON C.custid = O.custid
+    INNER JOIN Sales.MyOrderDetails AS OD
+        ON O.orderid = OD.orderid
+WHERE C.country = N'Norway';
+
+
+UPDATE C
+SET [address]=N'Erling Skakkes gate 2345'
+FROM Sales.MyCustomers AS C
+    INNER JOIN Sales.MyOrders AS O
+       ON C.custid = O.custid
+    INNER JOIN Sales.MyOrderDetails AS OD
+       ON O.orderid = OD.orderid
+WHERE C.country = N'Norway';
+
+
+
+/*=========================================
+Nondeterministic UPDATE
+=========================================*/
+-- let's take a look
+SELECT C.custid,
+    C.postalcode,
+    O.shippostalcode
+FROM Sales.MyCustomers AS C
+    INNER JOIN Sales.MyOrders AS O
+       ON C.custid = O.custid
+ORDER BY C.custid;
+
+
+-- let's update
+UPDATE C
+SET C.postalcode = O.shippostalcode
+	FROM Sales.MyCustomers AS C
+		INNER JOIN Sales.MyOrders AS O
+			ON C.custid = O.custid;
+
+-- check update
+SELECT custid, postalcode
+FROM Sales.MyCustomers
+ORDER BY custid;
+
+-- use determenistic
+
+UPDATE C
+SET C.postalcode = A.shippostalcode
+FROM Sales.MyCustomers AS C
+    CROSS APPLY (
+                    SELECT TOP (1) O.shippostalcode
+                    FROM Sales.MyOrders AS O
+                    WHERE O.custid = C.custid
+                    ORDER BY orderdate, orderid
+                ) AS A
+
+
+
+/*=========================================
+--Prevent redundant update
+=========================================*/
+
+UPDATE TGT
+	SET TGT.country = SRC.country,
+		TGT.postalcode = SRC.postalcode
+FROM Sales.MyCustomers AS TGT
+	INNER JOIN Sales.Customers AS SRC
+		ON TGT.custid = SRC.custid
+WHERE
+	TGT.country <> SRC.country
+	OR TGT.postalcode <> SRC.postalcode
+	--OR (TGT.postalcode IS NULL		AND SRC.postalcode IS NOT NULL)
+	--OR (TGT.postalcode IS NOT NULL	AND SRC.postalcode IS NULL)
+;
+
+
+
+/*=========================================
+All at once
+=========================================*/
+
+DROP TABLE IF EXISTS dbo.T1;
+CREATE TABLE dbo.T1
+(
+	keycol INT NOT NULL	CONSTRAINT PK_T1 PRIMARY KEY,
+	col1 INT NOT NULL,
+	col2 INT NOT NULL
+);
+INSERT INTO dbo.T1(keycol, col1, col2) VALUES(1, 100, 0);
+
+DECLARE @add AS INT = 10;
+
+UPDATE dbo.T1
+	SET 
+		col1 += @add,
+		col2 = col1
+WHERE keycol = 1;
+
+SELECT * FROM dbo.T1;
 
 --clean up
-
---drop shemacollection
-USE [TSQL2012]
-
-ALTER TABLE [Production].[Products] DROP CONSTRAINT [ck_Namespace]
-GO
+DROP TABLE IF EXISTS dbo.T1;
 
 
-/****** Object:  XmlSchemaCollection [ProductsAdditionalAttributes]    Script Date: 3/1/2016 9:12:17 AM ******/
-DROP XML SCHEMA COLLECTION  [dbo].[ProductsAdditionalAttributes]
-GO
+--**************************************************************************************************************
+--DELETE
+--**************************************************************************************************************
 
-ALTER TABLE Production.Products
-DROP COLUMN additionalattributes
+/*=========================================
+Sample Data
+=========================================*/
+IF OBJECT_ID('Sales.MyOrderDetails', 'U') IS NOT NULL
+	DROP TABLE Sales.MyOrderDetails;
+IF OBJECT_ID('Sales.MyOrders', 'U') IS NOT NULL
+	DROP TABLE Sales.MyOrders;
+IF OBJECT_ID('Sales.MyCustomers', 'U') IS NOT NULL
+	DROP TABLE Sales.MyCustomers;
+
+SELECT * INTO Sales.MyCustomers FROM Sales.Customers;
+
+ALTER TABLE Sales.MyCustomers
+	ADD CONSTRAINT PK_MyCustomers PRIMARY KEY(custid);
+
+SELECT * INTO Sales.MyOrders FROM Sales.Orders;
+
+ALTER TABLE Sales.MyOrders
+	ADD CONSTRAINT PK_MyOrders PRIMARY KEY(orderid);
+
+SELECT * INTO Sales.MyOrderDetails FROM Sales.OrderDetails;
+
+ALTER TABLE Sales.MyOrderDetails
+	ADD CONSTRAINT PK_MyOrderDetails PRIMARY KEY(orderid, productid);
 
 
--- Drop Auxiliary Tables
-DROP TABLE dbo.Beverages, dbo.Condiments;
-GO
+/*=========================================
 
-ALTER TABLE Production.Products
-ALTER COLUMN additionalattributes
-XML(dbo.ProductsAdditionalAttributes);
+=========================================*/
+SELECT * FROM Sales.MyOrderDetails
+WHERE productid = 11;
 
--- Function to Retrieve the Namespace
-CREATE FUNCTION dbo.GetNamespace(@chkcol XML)
-RETURNS NVARCHAR(15)
-AS
+DELETE FROM Sales.MyOrderDetails
+WHERE productid = 11;
+
+SELECT * FROM Sales.MyOrderDetails
+WHERE productid = 11;
+
+/*=========================================
+delete is very log expensive command
+here is a variant  with chunks.
+=========================================*/
+WHILE 1 = 1
 BEGIN
-RETURN @chkcol.value('namespace-uri((/*)[1])','NVARCHAR(15)')
-END;
+	DELETE TOP (5) FROM Sales.MyOrderDetails
+	WHERE productid = 12;
+    -- PRINT  ' iteration'
+	IF @@ROWCOUNT < 5 BREAK;
+     
+END
+
+/*=========================================
+DELETE Using Table Expressions
+=========================================*/
+
+WITH OldestOrders AS
+(
+	SELECT TOP (100) *
+	FROM Sales.MyOrders
+	ORDER BY orderdate, orderid
+)
+DELETE FROM OldestOrders;
+
+
+/*=========================================
+DELETE Based on a Join
+=========================================*/
+
+SELECT *  FROM Sales.MyOrders;
+
+DELETE FROM O
+FROM Sales.MyOrders AS O
+	INNER JOIN Sales.MyCustomers AS C
+		ON O.custid = C.custid
+WHERE C.country = N'USA';
+
+
+-- another version
+DELETE FROM Sales.MyOrders
+WHERE EXISTS
+			(
+				SELECT *
+				FROM Sales.MyCustomers
+				WHERE MyCustomers.custid = MyOrders.custid
+				AND MyCustomers.country = N'USA'
+			);
+
+
+
+/*=========================================
+Clean up
+=========================================*/
+
+IF OBJECT_ID('Sales.MyOrderDetails', 'U') IS NOT NULL
+	DROP TABLE Sales.MyOrderDetails;
+IF OBJECT_ID('Sales.MyOrders', 'U') IS NOT NULL
+	DROP TABLE Sales.MyOrders;
+IF OBJECT_ID('Sales.MyCustomers', 'U') IS NOT NULL
+	DROP TABLE Sales.MyCustomers;
+
+
+
+
+--**************************************************************************************************************
+--Other Data Modification Aspects
+--**************************************************************************************************************
+
+
+/*=========================================
+Using the IDENTITY Column Property
+=========================================*/
+
+USE TSQL2012;
+DROP TABLE IF EXISTS Sales.MyOrders;
 GO
--- Function to Retrieve the Category Name
-CREATE FUNCTION dbo.GetCategoryName(@catid INT)
-RETURNS NVARCHAR(15)
-AS
-BEGIN
-RETURN
-(SELECT categoryname
-FROM Production.Categories
-WHERE categoryid = @catid)
-END;
+CREATE TABLE Sales.MyOrders
+(
+	orderid INT NOT NULL IDENTITY(1, 1)	CONSTRAINT PK_MyOrders_orderid PRIMARY KEY,
+	custid INT NOT NULL					CONSTRAINT CHK_MyOrders_custid CHECK(custid > 0),
+	empid INT NOT NULL					CONSTRAINT CHK_MyOrders_empid CHECK(empid > 0),
+	orderdate DATE NOT NULL
+);
+
+INSERT 
+	INTO Sales.MyOrders(custid, empid, orderdate)
+VALUES
+		(1, 2, '20120620'),
+		(1, 3, '20120620'),
+		(2, 2, '20120620');
+
+SELECT * FROM Sales.MyOrders;
+
+/*=========================================
+how to get identity value
+=========================================*/
+SELECT
+	SCOPE_IDENTITY()				AS [SCOPE_IDENTITY],
+	@@IDENTITY						AS [@@IDENTITY],
+	IDENT_CURRENT('Sales.MyOrders')	AS [IDENT_CURRENT];
+
+--Check identity value after delete
+DELETE FROM Sales.MyOrders;
+SELECT IDENT_CURRENT('Sales.MyOrders') AS [IDENT_CURRENT];
+go
+
+TRUNCATE TABLE Sales.MyOrders;
+SELECT IDENT_CURRENT('Sales.MyOrders') AS [IDENT_CURRENT];
+
+--reseed
+DBCC CHECKIDENT('Sales.MyOrders', RESEED, 4);
+
+
+--
+INSERT 
+	INTO Sales.MyOrders(custid, empid, orderdate) 
+VALUES(2, 2, '20120620');
+SELECT * FROM Sales.MyOrders;
+
+-- potentional gaps
+INSERT 
+	INTO Sales.MyOrders(custid, empid, orderdate) 
+VALUES(3, -1, '20120620');
+-- this break constraint but identity is used
+
+INSERT 
+	INTO Sales.MyOrders(custid, empid, orderdate) 
+VALUES(3, 1, '20120620');
+--This time, the insertion succeeds. Query the table.
+SELECT * FROM Sales.MyOrders;
+
+
+
+
+
+/*=========================================
+Using the Sequence Object
+=========================================*/
+
+DROP SEQUENCE IF EXISTS [Sales].[SeqOrderIDs]
 GO
--- Add the Constraint
-ALTER TABLE Production.Products ADD CONSTRAINT ck_Namespace
-CHECK (dbo.GetNamespace(additionalattributes) =
-dbo.GetCategoryName(categoryid));
+
+CREATE SEQUENCE Sales.SeqOrderIDs AS INT
+MINVALUE 1
+CYCLE;
+
+
+SELECT NEXT VALUE FOR Sales.SeqOrderIDs;
+
+
+ALTER SEQUENCE Sales.SeqOrderIDs
+RESTART WITH 1;
+
+
+IF OBJECT_ID('Sales.MyOrders') IS NOT NULL DROP TABLE Sales.MyOrders;
 GO
+CREATE TABLE Sales.MyOrders
+(
+	orderid INT NOT NULL	CONSTRAINT PK_MyOrders_orderid PRIMARY KEY,
+	custid INT NOT NULL		CONSTRAINT CK_MyOrders_custid CHECK(custid > 0),
+	empid INT NOT NULL		CONSTRAINT CK_MyOrders_empid CHECK(empid > 0),
+	orderdate DATE NOT NULL
+);
+
+INSERT 
+	INTO Sales.MyOrders(orderid, custid, empid, orderdate) 
+	VALUES
+		(NEXT VALUE FOR Sales.SeqOrderIDs, 1, 2, '20120620'),
+		(NEXT VALUE FOR Sales.SeqOrderIDs, 1, 3, '20120620'),
+		(NEXT VALUE FOR Sales.SeqOrderIDs, 2, 2, '20120620');
 
 
--- Beverage
-UPDATE Production.Products
-SET additionalattributes = N'
-<Beverages xmlns="Beverages">
-<percentvitaminsRDA>27</percentvitaminsRDA>
-</Beverages>'
-WHERE productid = 1;
--- Condiment
-UPDATE Production.Products
-SET additionalattributes = N'
-<Condiments xmlns="Condiments">
-<shortdescription>very sweet</shortdescription>
-</Condiments>'
-WHERE productid = 3;
+SELECT * FROM Sales.MyOrders;
 
-SELECT * FROM Production.Products
---check
-
--- String instead of int
-UPDATE Production.Products
-SET additionalattributes = N'
-<Beverages xmlns="Beverages">
-<percentvitaminsRDA>twenty seven</percentvitaminsRDA>
-</Beverages>'
-WHERE productid = 1;
--- Wrong namespace
-UPDATE Production.Products
-SET additionalattributes = N'
-<Condiments xmlns="Condiments">
-<shortdescription>very sweet</shortdescription>
-</Condiments>'
-WHERE productid = 2;
--- Wrong element
-UPDATE Production.Products
-SET additionalattributes = N'
-<Condiments xmlns="Condiments">
-<unknownelement>very sweet</unknownelement>
-</Condiments>'
-WHERE productid = 3;
+-- insert select
+INSERT 
+	INTO Sales.MyOrders(orderid, custid, empid, orderdate)
+SELECT
+	NEXT VALUE FOR Sales.SeqOrderIDs OVER(ORDER BY orderid),
+	custid,
+	empid,
+	orderdate
+FROM Sales.Orders
+WHERE custid = 1;
 
 
+INSERT 
+	INTO Sales.MyOrders( custid, empid, orderdate) 
+	VALUES
+		( 1, 2, '20180303'),
+		( 1, 3, '20180303'),
+		( 2, 2, '20180303')
 
---clean up
 
+-- add as a constraint
+ALTER TABLE Sales.MyOrders
+	ADD CONSTRAINT DF_MyOrders_orderid
+	DEFAULT(NEXT VALUE FOR Sales.SeqOrderIDs) FOR orderid;
+
+INSERT INTO Sales.MyOrders(custid, empid, orderdate)
+SELECT
+	custid,
+	empid,
+	orderdate
+FROM Sales.Orders
+WHERE custid = 2;
+-- review 
+SELECT * FROM Sales.MyOrders;
+
+
+/*=========================================
+Merging Data
+
+=========================================*/
+
+/*=========================================
+Prepare data
+=========================================*/
+DROP TABLE IF EXISTS Sales.MyOrders;
+DROP SEQUENCE IF EXISTS Sales.SeqOrderIDs;
+CREATE SEQUENCE Sales.SeqOrderIDs AS INT
+MINVALUE 1
+CYCLE;
+CREATE TABLE Sales.MyOrders
+(
+	orderid INT NOT NULL
+		CONSTRAINT PK_MyOrders_orderid PRIMARY KEY
+		CONSTRAINT DF_MyOrders_orderid DEFAULT(NEXT VALUE FOR Sales.SeqOrderIDs),
+	custid INT NOT NULL
+		CONSTRAINT CK_MyOrders_custid CHECK(custid > 0),
+	empid INT NOT NULL
+		CONSTRAINT CK_MyOrders_empid CHECK(empid > 0),
+	orderdate DATE NOT NULL
+);
+
+DECLARE
+	@orderid AS INT = 1,
+	@custid AS INT = 2,
+	@empid AS INT = 2,
+	@orderdate AS DATE = '20120620';
+
+MERGE INTO Sales.MyOrders WITH (HOLDLOCK) AS TGT  -- explain why  HOLDLOCK - two process P1 and P2 run at the same time
+USING (VALUES(@orderid, @custid, @empid, @orderdate))
+	AS SRC(orderid, custid, empid, orderdate)
+	ON SRC.orderid = TGT.orderid
+WHEN MATCHED THEN UPDATE
+	SET TGT.custid = SRC.custid,
+	TGT.empid = SRC.empid,
+	TGT.orderdate = SRC.orderdate
+WHEN NOT MATCHED THEN INSERT (orderid, custid, empid, orderdate)
+	VALUES(SRC.orderid, SRC.custid, SRC.empid, SRC.orderdate);
+
+SELECT * FROM Sales.MyOrders;
+
+GO
+-- to prevent redundant update
+DECLARE
+	@orderid AS INT = 1,
+	@custid AS INT = 1,
+	@empid AS INT = 2,
+	@orderdate AS DATE = '20120620';
+MERGE INTO Sales.MyOrders WITH (HOLDLOCK) AS TGT
+USING (VALUES(@orderid, @custid, @empid, @orderdate))
+	AS SRC( orderid, custid, empid, orderdate)
+	ON SRC.orderid = TGT.orderid
+WHEN MATCHED 
+	AND ( TGT.custid <> SRC.custid
+	OR TGT.empid <> SRC.empid
+	OR TGT.orderdate <> SRC.orderdate) 
+		THEN UPDATE
+		SET TGT.custid = SRC.custid,
+			TGT.empid = SRC.empid,
+			TGT.orderdate = SRC.orderdate
+WHEN NOT MATCHED 
+		THEN INSERT (orderid, custid, empid, orderdate)
+		VALUES(SRC.orderid, SRC.custid, SRC.empid, SRC.orderdate);
+
+-- remember about NULL
 /*
-ALTER TABLE Production.Products
-DROP CONSTRAINT ck_Namespace;
-ALTER TABLE Production.Products
-DROP COLUMN additionalattributes;
-DROP XML SCHEMA COLLECTION dbo.ProductsAdditionalAttributes;
-DROP FUNCTION dbo.GetNamespace;
-DROP FUNCTION dbo.GetCategoryName;
-GO
+TGT.custid <> SRC.custid
+OR (TGT.custid IS NULL AND SRC.custid IS NOT NULL)
+OR (TGT.custid IS NOT NULL AND SRC.custid IS NULL)
 */
 
+-- additional to merge in T-SQL WHEN NOT MATCHED BY SOURCE THEN
+DECLARE @Orders AS TABLE
+(
+	orderid INT NOT NULL PRIMARY KEY,
+	custid INT NOT NULL,
+	empid INT NOT NULL,
+	orderdate DATE NOT NULL
+);
+INSERT 
+	INTO @Orders(orderid, custid, empid, orderdate) 
+	VALUES
+		(2, 1, 3, '20120612'),
+		(3, 2, 2, '20120612'),
+		(4, 3, 5, '20120612');
+MERGE INTO Sales.MyOrders AS TGT
+USING @Orders AS SRC
+	ON SRC.orderid = TGT.orderid
+WHEN MATCHED 
+	AND ( TGT.custid <> SRC.custid
+	OR TGT.empid <> SRC.empid
+	OR TGT.orderdate <> SRC.orderdate) 
+		THEN UPDATE
+		SET TGT.custid = SRC.custid,
+			TGT.empid = SRC.empid,
+			TGT.orderdate = SRC.orderdate
+WHEN NOT MATCHED 
+	THEN INSERT
+	VALUES(SRC.orderid, SRC.custid, SRC.empid, SRC.orderdate)
+WHEN NOT MATCHED 
+	BY SOURCE THEN
+	DELETE;
 
-USE AdventureWorks2016CTP3 
-GO 
-SELECT p.Name, p.ProductNumber, pm.Instructions.query( 
-  'declare namespace AW="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions "; 
-  AW:root/AW:Location[@LaborHours>2.5]') As Locations 
-FROM Production.Product p 
-JOIN Production.ProductModel pm 
-  ON p.ProductModelID = pm.ProductModelID 
-WHERE pm.Instructions is not NULL
+SELECT * FROM Sales.MyOrders;
+/*=========================================
+Working with the OUTPUT Clause
 
+=========================================*/
 
-SELECT * FROM [Production].[ProductModel]
+/*
+prepare data
+*/
+IF OBJECT_ID('Sales.MyOrders') IS NOT NULL DROP TABLE Sales.MyOrders;
+IF OBJECT_ID('Sales.MyOrders2') IS NOT NULL DROP TABLE Sales.MyOrders2;
+IF OBJECT_ID('Sales.SeqOrderIDs') IS NOT NULL DROP SEQUENCE Sales.SeqOrderIDs;
+CREATE SEQUENCE Sales.SeqOrderIDs AS INT
+MINVALUE 1
+CYCLE;
+CREATE TABLE Sales.MyOrders
+(
+	orderid INT NOT NULL
+		CONSTRAINT PK_MyOrders_orderid PRIMARY KEY
+		CONSTRAINT DF_MyOrders_orderid DEFAULT(NEXT VALUE FOR Sales.SeqOrderIDs),
+	custid INT NOT NULL
+		CONSTRAINT CK_MyOrders_custid CHECK(custid > 0),
+	empid INT NOT NULL
+		CONSTRAINT CK_MyOrders_empid CHECK(empid > 0),
+	orderdate DATE NOT NULL
+);
 
+SELECT * INTO Sales.MyOrders2 FROM Sales.MyOrders;
 
+--INSERT with OUTPUT
 
-/*==============================================================================================================
+INSERT INTO Sales.MyOrders(custid, empid, orderdate)
+	OUTPUT
+	inserted.orderid, inserted.custid, inserted.empid, inserted.orderdate
+SELECT custid, empid, orderdate
+FROM Sales.Orders
+WHERE shipcountry = N'Norway';
 
-JSON
+SELECT * FROM Sales.MyOrders;
 
+-- we can store result
+INSERT INTO Sales.MyOrders(custid, empid, orderdate)
+OUTPUT
+	inserted.orderid, inserted.custid, inserted.empid, inserted.orderdate
+INTO Sales.MyOrders2(orderid, custid, empid, orderdate)
+SELECT custid, empid, orderdate
+FROM Sales.Orders
+WHERE shipcountry = N'Norway';
 
-==============================================================================================================*/
+SELECT * FROM Sales.MyOrders2;
 
-
-USE [TSQL2012];
+--Clean up
+DROP TABLE IF EXISTS Sales.MyOrders2;
 GO
 
-/*==============================================================================================================
-Convert SQL Server data to JSON or export JSON
-andreypotapov.database.windows.net
-==============================================================================================================*/
-
---For json auto
-SELECT 
-     Customer.custid,
-     Customer.companyname,
-     [Order].orderid,
-     [Order].orderdate
-FROM Sales.Customers AS Customer
-     INNER JOIN Sales.Orders AS [Order]
-          ON Customer.custid = [Order].custid
-WHERE 
-          Customer.custid <= 2
-     AND [Order].orderid %2 = 0
-ORDER BY Customer.custid, [Order].orderid
-FOR JSON AUTO;
-
---For json path
-SELECT 
-     Customer.custid,
-     Customer.companyname,
-     [Order].orderid,
-     [Order].orderdate
-FROM Sales.Customers AS Customer
-     INNER JOIN Sales.Orders AS [Order]
-          ON Customer.custid = [Order].custid
-WHERE 
-          Customer.custid <= 2
-     AND [Order].orderid %2 = 0
-ORDER BY Customer.custid, [Order].orderid
-FOR JSON PATH;
-
---For json path: specify objects
-SELECT 
-     Customer.custid		AS [Customer.Id],
-     Customer.companyname	AS [Customer.CompanyName],
-     [Order].orderid		AS [Order.Id],
-     [Order].orderdate		AS [Order.Date]
-FROM Sales.Customers AS Customer
-     INNER JOIN Sales.Orders AS [Order]
-          ON Customer.custid = [Order].custid
-WHERE 
-          Customer.custid <= 2
-     AND [Order].orderid %2 = 0
-ORDER BY Customer.custid, [Order].orderid
-FOR JSON PATH;
-
---For json path: root object and array
-SELECT 
-     Customer.custid		AS [Customer.Id],
-     Customer.companyname	AS [Customer.CompanyName],
-	 [Customer.Orders] = 
-		 (
-			  SELECT 
-					[Order].orderid		AS [OrderId],
-					[Order].orderdate	AS [OrderDate]
-			  FROM Sales.Orders AS [Order]
-			  WHERE Customer.custid = [Order].custid
-					AND [Order].orderid %2 = 0
-			  ORDER BY [Order].orderid
-			  FOR JSON AUTO
-		 )
-FROM Sales.Customers AS Customer
-WHERE Customer.custid <= 2
-ORDER BY Customer.custid
-FOR JSON PATH, ROOT('Customers');
-
---Null values and root array
-SELECT
-	custid,
-	city,
-	region
-FROM Sales.Customers
-WHERE custid = 1
-FOR JSON PATH;
-
-SELECT
-	custid,
-	city,
-	region
-FROM Sales.Customers
-WHERE custid = 1
-FOR JSON PATH, INCLUDE_NULL_VALUES, WITHOUT_ARRAY_WRAPPER;
+---DELETE with OUTPUT
+DELETE FROM Sales.MyOrders
+OUTPUT deleted.orderid
+WHERE empid = 1;
 
 
-/*==============================================================================================================
-Convert JSON collections to a rowset
-==============================================================================================================*/
+--UPDATE with OUTPUT
 
---Verify json
-DECLARE
-	@GoodJSON NVARCHAR(MAX) = N'{"key": "value"}',
-	@BadJSON NVARCHAR(MAX) = N'{"key" ',
-	@EmptyJSON NVARCHAR(MAX);
+UPDATE Sales.MyOrders
+SET orderdate = DATEADD(day, 1, orderdate)
+OUTPUT
+	inserted.orderid,
+	deleted.orderdate AS old_orderdate,
+	inserted.orderdate AS neworderdate
+WHERE empid = 7;
 
-SELECT
-	ISJSON(@GoodJSON)	AS [GoodJSON],
-	ISJSON(@BadJSON)	AS [BadJSON],
-	ISJSON(@EmptyJSON)	AS [EmptyJSON]
+
+--MERGE with OUTPUT
+
+MERGE INTO Sales.MyOrders AS TGT
+USING (VALUES(1, 70, 1, '20061218'),
+			(2, 50, 7, '20070429'),
+			(3, 50, 7, '20070820'),
+			(4, 70, 3, '20080114'),
+			(5, 70, 1, '20080226'),
+			(6, 70, 2, '20080410'))
+AS SRC(orderid, custid, empid, orderdate )
+	ON SRC.orderid = TGT.orderid
+WHEN MATCHED AND ( TGT.custid <> SRC.custid
+		OR TGT.empid <> SRC.empid
+		OR TGT.orderdate <> SRC.orderdate) 
+		THEN UPDATE
+			SET TGT.custid = SRC.custid,
+				TGT.empid = SRC.empid,
+				TGT.orderdate = SRC.orderdate
+WHEN NOT MATCHED 
+	THEN INSERT (orderid, custid, empid, orderdate)
+	VALUES(SRC.orderid, SRC.custid, SRC.empid, SRC.orderdate)
+WHEN NOT MATCHED BY SOURCE
+	THEN DELETE
+OUTPUT
+	$action AS the_action,
+	inserted.custid AS inserted_custid,
+	deleted.custid AS deleted_custid,
+	COALESCE(inserted.orderid, deleted.orderid) AS orderid;
+
+
+--OUTPUT option with FROM clause
+UPDATE o
+SET orderdate = DATEADD(day, 1, o.orderdate)
+OUTPUT
+	inserted.orderdate,
+	emp.firstname,
+	emp.lastname
+FROM Sales.MyOrders AS o
+    INNER JOIN HR.Employees AS emp
+        ON O.empid = emp.empid
+WHERE emp.lastname = N'Davis';
+
+DELETE o
+OUTPUT
+	deleted.orderid,
+	emp.firstname,
+	emp.lastname
+FROM Sales.MyOrders AS o
+    INNER JOIN HR.Employees AS emp
+        ON O.empid = emp.empid
+WHERE emp.lastname = N'Davis';
+
+--Doesn't work with INSERT
+INSERT INTO Sales.MyOrders(custid, empid, orderdate)
+	OUTPUT
+	inserted.orderid, emp.firstname, emp.lastname
+SELECT o.custid, o.empid, o.orderdate
+FROM Sales.Orders AS o
+    INNER JOIN HR.Employees AS emp
+        ON O.empid = emp.empid
+WHERE emp.lastname = N'Davis';
+
+--Workaround
+MERGE
+	Sales.MyOrders AS dst
+USING (
+	SELECT o.custid, o.empid, o.orderdate, emp.firstname, emp.lastname
+	FROM Sales.Orders AS o
+		INNER JOIN HR.Employees AS emp
+			ON O.empid = emp.empid
+	WHERE emp.lastname = N'Davis'
+) AS src
+ON 1 = 0	--fake condition
+WHEN NOT MATCHED THEN
+	INSERT (custid, empid, orderdate)
+	VALUES (src.custid, src.empid, src.orderdate)
+OUTPUT
+	inserted.orderid, src.firstname, src.lastname
 ;
 
-
---Simple OPENJSON
-DECLARE @json NVARCHAR(MAX)
-SET @json =  
-N'  
-   {  
-      "id":2,
-      "info":{  
-         "name":"John",
-         "surname":"Smith"
-      },
-      "age":25
-	}
-';
-SELECT *  
-FROM OPENJSON(@json);
-
-GO
-
---Structured OPENJSON
-DECLARE @json NVARCHAR(MAX)
-SET @json =  
-N'[  
-   {  
-      "id":2,
-      "info":{  
-         "name":"John",
-         "surname":"Smith"
-      },
-      "age":25
-   },
-   {  
-      "id":5,
-      "info":{  
-         "name":"Jane",
-         "surname":"Smith"
-      },
-	  "age": null,
-      "dob":"2005-11-04T12:00:00"
-   }
-]'  
-
-SELECT *  
-FROM OPENJSON(@json)  
-  WITH (
-            id int 'strict $.id',  
-            firstName nvarchar(50) '$.info.name', 
-            lastName nvarchar(50) '$.info.surname',  
-            age int,		--bad practice
-            dateOfBirth datetime2 '$.dob'
-        );
-
-
---Strict and lax: working with missed key
-DECLARE @Json1 NVARCHAR(MAX) = N'{"ID": 1}';
-SELECT Id FROM OPENJSON(@Json1) WITH (Id INT '$.Id');	--The same as 'lax$.id'
-SELECT Id FROM OPENJSON(@Json1) WITH (Id INT 'strict$.Id');
-
---Strict just check if the key exists, null is still allowed
-DECLARE @Json2 NVARCHAR(MAX) = N'{"Id": null}';
-SELECT Id FROM OPENJSON(@Json2) WITH (Id INT 'strict$.Id');
-
-GO
-
---Array of objects
-
-DECLARE @JSON NVARCHAR(MAX) = N'
-    {
-        "CustomerId": 1,
-        "CompanyName": "Customer NRZBB",
-        "Orders": [
-          {
-            "OrderId": 10692,
-            "OrderDate": "2007-10-03T00:00:00"
-          },
-          {
-            "OrderId": 10702,
-            "OrderDate": "2007-10-13T00:00:00"
-          }
-		]
-	}
-';
-SELECT
-	cust.CustomerId, cust.CompanyName, ord.OrderId, ord.OrderDate
-FROM
-	OPENJSON(@JSON) WITH(
-		CustomerId	INT				'strict$.CustomerId',
-		CompanyName	NVARCHAR(100)	'$.CompanyName',
-		Orders		NVARCHAR(MAX)	'$.Orders'		AS JSON
-	) AS cust
-	CROSS APPLY OPENJSON(cust.Orders) WITH(
-		OrderId		INT				'$.OrderId',
-		OrderDate	DATETIME		'$.OrderDate'
-	) AS ord
-;
-
-GO
-
-
---Array of values
-
-DECLARE @JSON NVARCHAR(MAX) = N'
-    {
-        "CustomerId": 1,
-        "CompanyName": "Customer NRZBB",
-        "Orders": [10692, 10702, 10952]
-	}
-';
-SELECT
-	cust.CustomerId, cust.CompanyName, ord.[value] AS OrderId
-FROM
-	OPENJSON(@JSON) WITH(
-		CustomerId	INT				'strict$.CustomerId',
-		CompanyName	NVARCHAR(100)	'$.CompanyName',
-		Orders		NVARCHAR(MAX)	'$.Orders'		AS JSON
-	) AS cust
-	CROSS APPLY OPENJSON(cust.Orders) AS ord
-;
-
-GO
-
-
---Path in OPENJSON
-
-DECLARE @JSON NVARCHAR(MAX) = N'
-    {
-        "CustomerId": 1,
-        "CompanyName": "Customer NRZBB",
-        "Orders": [10692, 10702, 10952]
-	}
-';
-SELECT
-	ord.[value] AS OrderId
-FROM
-	OPENJSON(@JSON, N'$.Orders') AS ord
-;
-
-GO
-
-
---JSON_VALUE and JSON_QUERY
-
-DECLARE @JSON NVARCHAR(MAX) = N'
-    {
-        "CustomerId": 1,
-        "CompanyName": "Customer NRZBB",
-        "Orders": [10692, 10702, 10952]
-	}
-';
-SELECT
-	JSON_VALUE(@JSON, N'$.CustomerId')	AS CustomerId,
-	JSON_VALUE(@JSON, N'$.CompanyName')	AS CompanyName,
-	JSON_VALUE(@JSON, N'$.Orders[0]')	AS FirstOrderId,
-
-	JSON_QUERY(@JSON, N'$.Orders')		AS Orders,
-	JSON_QUERY(@JSON, N'$')				AS JsonData
-;
-GO
-
---Json in array wrappers
-DECLARE @JSON NVARCHAR(MAX) = N'
-[
-	{
-        "CustomerId": 1,
-        "CompanyName": "Customer NRZBB",
-        "Orders": [10692, 10702, 10952]
-	}
-]
-';
-SELECT
-	JSON_VALUE(@JSON, N'$[0].CustomerId')	AS CustomerId,
-	JSON_VALUE(@JSON, N'$[0].CompanyName')	AS CompanyName,
-	JSON_VALUE(@JSON, N'$[0].Orders[0]')	AS FirstOrderId,
-	JSON_QUERY(@JSON, N'$[0].Orders')		AS Orders
-;
-GO
-
-/*=================================================================================================================
-   - subtopicname: Change JSON values
-=================================================================================================================*/
-DECLARE @JSON NVARCHAR(MAX) = N'
-    {
-        "CustomerId": 1,
-        "CompanyName": "Customer NRZBB",
-        "Orders": [10692, 10702, 10952]
-	}
-';
-SELECT
-	JSON_MODIFY(@JSON, N'$.CompanyName', N'Customer AAA')
-;
-GO
-
---Multiple JSON_MODIFY
-DECLARE @JSON NVARCHAR(MAX) = N'
-    {
-        "CustomerId": 1,
-        "CompanyName": "Customer NRZBB",
-        "Orders": [10692, 10702, 10952]
-	}
-';
-SELECT
-	JSON_MODIFY(JSON_MODIFY(JSON_MODIFY(@JSON,
-		N'$.CustomerId', 99),		--Update
-		N'$.CompanyName', NULL),	--Delete
-		N'append $.Orders', 22222)	--Add value
-;
-
-
---Show MSBI.Dev.S20E06.Script.01
+--Clean up
+DROP TABLE IF EXISTS Sales.MyOrders;

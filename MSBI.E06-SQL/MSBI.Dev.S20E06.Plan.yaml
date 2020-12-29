@@ -1,15 +1,40 @@
 ---
 topics:
-- topicname: Querying and Managing XML Data
+- topicname: Working with Variables
   subtopics:
-   - subtopicname: Returning Results As XML with FOR XML
-   - subtopicname: Querying XML Data with XQuery
-   - subtopicname: Using the XML Data Type
-- topicname: JSON data in SQL Server
+   - subtopicname: Assigning values with SET
+   - subtopicname: Assigning values with SELECT
+- topicname: Inserting Data
   subtopics:
-   - subtopicname: Key JSON capabilities of SQL Server and SQL Database
-   - subtopicname: Extract values from JSON text and use them in queries
-   - subtopicname: Change JSON values
-   - subtopicname: Convert JSON collections to a rowset
-   - subtopicname: Convert SQL Server data to JSON or export JSON
+   - subtopicname: INSERT VALUES
+   - subtopicname: INSERT SELECT
+   - subtopicname: INSERT EXEC
+   - subtopicname: SELECT INTO   
+- topicname: Updating Data
+  subtopics:
+   - subtopicname: UPDATE Statement
+   - subtopicname: UPDATE Based on Join
+   - subtopicname: Nondeterministic UPDATE
+   - subtopicname: UPDATE All-at-Once
+- topicname: Deleting Data
+  subtopics:
+   - subtopicname: DELETE Statement
+   - subtopicname: TRUNCATE Statement
+   - subtopicname: DELETE Based on a Join
+   - subtopicname: DELETE Using Table Expressions
+- topicname: Other Data Modification Aspects
+  subtopics:
+   - subtopicname: Using the IDENTITY Column Property
+     keywords: [SCOPE_IDENTITY,IDENTITY,IDENT_CURRENT]
+   - subtopicname: Using the Sequence Object
+- topicname: Merging Data
+  subtopics:
+   - subtopicname: Using the MERGE Statement
+- topicname: Using the OUTPUT Option
+  subtopics:
+   - subtopicname: Working with the OUTPUT Clause
+   - subtopicname: INSERT with OUTPUT
+   - subtopicname: DELETE with OUTPUT
+   - subtopicname: UPDATE with OUTPUT
+   - subtopicname: MERGE with OUTPUT
 ---
