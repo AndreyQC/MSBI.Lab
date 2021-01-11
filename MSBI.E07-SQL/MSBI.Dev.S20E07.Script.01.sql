@@ -226,7 +226,10 @@ GO
 Multistatement Table-Valued UDF
 
 =========================================*/
-CREATE OR ALTER FUNCTION Sales.fn_FilteredExtensionTF
+IF OBJECT_ID('Sales.fn_FilteredExtensionTF', 'TF') IS NOT NULL
+	DROP FUNCTION Sales.fn_FilteredExtensionTF;
+GO
+CREATE FUNCTION Sales.fn_FilteredExtensionTF
 (
      @lowqty AS SMALLINT,
      @highqty AS SMALLINT
