@@ -1,5 +1,5 @@
 /*=========================================
-MSBI.DEV.COURSE.S20E09.SCRIPT
+MSBI.DEV.COURSE.S21E08.SCRIPT
 =========================================*/
 
 
@@ -99,36 +99,36 @@ SELECT * FROM #Products WHERE [productid] = 1;
 Nested transaction
 =========================================*/
 
-SELECT @@TRANCOUNT, XACT_STATE(), N'Start';
+SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'Start';
 
 BEGIN TRAN;
-	SELECT @@TRANCOUNT, XACT_STATE(), N'First transaction';
+	SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'First transaction';
 
 		BEGIN TRAN; -- nested transaction
-			SELECT @@TRANCOUNT, XACT_STATE(), N'Second transaction';
+			SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'Second transaction';
 		COMMIT TRAN;
 
-	SELECT @@TRANCOUNT, XACT_STATE(), N'First commit';
+	SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'First commit';
 COMMIT TRAN;
 
-SELECT @@TRANCOUNT, XACT_STATE(), N'Second commit';
+SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'Second commit';
 
 
 /*=========================================
 Rollback transaction
 =========================================*/
 
-SELECT @@TRANCOUNT, XACT_STATE(), N'Start';
+SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'Start';
 
 BEGIN TRAN;
-	SELECT @@TRANCOUNT, XACT_STATE(), N'First transaction';
+	SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'First transaction';
 
 		BEGIN TRAN; -- nested transaction
-			SELECT @@TRANCOUNT, XACT_STATE(), N'Second transaction';
+			SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'Second transaction';
 		
 ROLLBACK TRAN;	-- just once
 
-SELECT @@TRANCOUNT, XACT_STATE(), N'Rollback';
+SELECT @@TRANCOUNT AS [TRANCOUNT], XACT_STATE() AS [XACT_STATE], N'Rollback';
 
 
 /*=========================================
@@ -194,6 +194,51 @@ COMMIT TRAN;
 SELECT * FROM #Categories WHERE [categoryid] = 11;
 SELECT * FROM #Products WHERE [productid] = 1;
 
+/*=========================================
+Batch
+=========================================*/
+SELECT 1;
+SELECT 1;
+SELECT 1;
+GO
+SELECT 1;
+GO
+
+--Variables
+DECLARE @x INT = 1;
+SELECT @x;
+GO
+--DECLARE @x INT = 2;
+SELECT @x; --Error
+SELECT 1;
+
+--Some types DDL statements must be the only statement in the batch 
+--GO
+CREATE VIEW [dbo].[TestView]
+	AS
+SELECT 1 AS [Col1];
+GO
+
+--One transaction per few batches
+BEGIN TRAN;
+GO
+SELECT empid, lastname, firstname, postalcode
+FROM HR.Employees;
+GO
+COMMIT TRAN;
+GO
+
+--Few transactions per one batch
+BEGIN TRAN;
+	SELECT empid, lastname, firstname, postalcode
+	FROM HR.Employees;
+COMMIT TRAN;
+BEGIN TRAN;
+	SELECT empid, lastname, firstname, postalcode
+	FROM HR.Employees;
+COMMIT TRAN;
+GO
+
 
 /*=========================================
 Blocking observation
@@ -245,43 +290,6 @@ SELECT *  FROM sys.dm_tran_locks
 
 
 /*=========================================
-Batch
-=========================================*/
-SELECT 1;
-SELECT 1;
-SELECT 1;
-GO
-SELECT 1;
-GO
-
---Variables
-DECLARE @x INT = 1;
-SELECT @x;
-GO
-SELECT @x; --Error
-
-
---One transaction per few batches
-BEGIN TRAN;
-GO
-SELECT empid, lastname, firstname, postalcode
-FROM HR.Employees;
-GO
-COMMIT TRAN;
-GO
-
---Few transactions per one batch
-BEGIN TRAN;
-SELECT empid, lastname, firstname, postalcode
-FROM HR.Employees;
-COMMIT TRAN;
-BEGIN TRAN;
-SELECT empid, lastname, firstname, postalcode
-FROM HR.Employees;
-COMMIT TRAN;
-GO
-
-/*=========================================
 RAISERROR
 =========================================*/
 
@@ -326,21 +334,6 @@ GO
 THROW 50000, 'Hi there', 0;
 PRINT 'THROW error'; -- Does not print
 GO
-
-
-/*=========================================
-TRY_CONVERT, TRY_CAST and TRY_PARSE
-=========================================*/
-
-SELECT TRY_CONVERT(DATETIME, '1752-12-31');
-SELECT TRY_CONVERT(DATETIME, '1753-01-01');
-
-SELECT TRY_CAST('1' AS INTEGER);
-SELECT TRY_CAST('B' AS INTEGER);
-
-SELECT TRY_PARSE('1' AS INTEGER);
-SELECT TRY_PARSE('B' AS INTEGER);
-
 
 
 /*=========================================
@@ -418,29 +411,29 @@ SET XACT_ABORT ON;
                unitprice, discontinued)
                VALUES(1, N'Test1: Ok categoryid', 1, 1, 18.00, 0);
 
-          SET IDENTITY_INSERT Production.Products OFF;
-
           PRINT 'After error';
 GO
           PRINT 'New batch';
+          
+		  SET IDENTITY_INSERT Production.Products OFF;
 SET XACT_ABORT OFF;
 
 
 /*=========================================
-
+ THROW always terminates the batch except when it is used in a TRY block
 =========================================*/
 USE TSQL2012;
 GO
-SET XACT_ABORT ON;
+--SET XACT_ABORT ON;
      PRINT 'Before error';
           THROW 50000, 'Error in usp_InsertCategories stored procedure', 0;
      PRINT 'After error';
      GO
      PRINT 'New batch';
-SET XACT_ABORT OFF;
+--SET XACT_ABORT OFF;
 
 /*=========================================
-
+Enhance Unstructured Error Handling
 =========================================*/
 USE TSQL2012;
 GO
@@ -492,14 +485,12 @@ GO
 BEGIN TRY
      BEGIN TRAN;
           SET IDENTITY_INSERT Production.Products ON;
-
+          --duplicate primary key
           INSERT INTO Production.Products(productid, productname, supplierid,
           categoryid, unitprice, discontinued)
-          VALUES(1, N'Test1: Ok categoryid', 1, 1, 18.00, 0);
+          VALUES(1, N'Test: Bad categoryid', 1, 1, 18.00, 0);
 
-          INSERT INTO Production.Products(productid, productname, supplierid,
-          categoryid, unitprice, discontinued)
-          VALUES(101, N'Test2: Bad categoryid', 1, 10, 18.00, 0);
+          PRINT 'After error';
 
           SET IDENTITY_INSERT Production.Products OFF;
      COMMIT TRAN;
@@ -533,14 +524,12 @@ DECLARE @error_number AS INT, @error_message AS NVARCHAR(1000), @error_severity 
 BEGIN TRY
      BEGIN TRAN;
           SET IDENTITY_INSERT Production.Products ON;
+          --duplicate primary key
+          INSERT INTO Production.Products(productid, productname, supplierid,
+          categoryid, unitprice, discontinued)
+          VALUES(1, N'Test: Bad categoryid', 1, 1, 18.00, 0);
 
-          INSERT 
-               INTO Production.Products(productid, productname, supplierid, categoryid, unitprice, discontinued)
-          VALUES(1, N'Test1: Ok categoryid', 1, 1, 18.00, 0);
-
-          INSERT 
-               INTO Production.Products(productid, productname, supplierid, categoryid, unitprice, discontinued)
-          VALUES(101, N'Test2: Bad categoryid', 1, 10, 18.00, 0);
+          PRINT 'After error';
 
           SET IDENTITY_INSERT Production.Products OFF;
      COMMIT TRAN;
@@ -567,14 +556,12 @@ GO
 BEGIN TRY
      BEGIN TRAN;
           SET IDENTITY_INSERT Production.Products ON;
+          --duplicate primary key
+          INSERT INTO Production.Products(productid, productname, supplierid,
+          categoryid, unitprice, discontinued)
+          VALUES(1, N'Test: Bad categoryid', 1, 1, 18.00, 0);
 
-          INSERT 
-               INTO Production.Products(productid, productname, supplierid, categoryid, unitprice, discontinued)
-          VALUES(1, N'Test1: Ok categoryid', 1, 1, 18.00, 0);
-
-          INSERT 
-               INTO Production.Products(productid, productname, supplierid, categoryid, unitprice, discontinued)
-          VALUES(101, N'Test2: Bad categoryid', 1, 10, 18.00, 0);
+          PRINT 'After error';
 
           SET IDENTITY_INSERT Production.Products OFF;
      COMMIT TRAN;
@@ -588,3 +575,18 @@ BEGIN CATCH
 END CATCH;
 GO
 SELECT XACT_STATE() as 'XACT_STATE', @@TRANCOUNT as '@@TRANCOUNT';
+
+
+
+/*=========================================
+TRY_CONVERT, TRY_CAST and TRY_PARSE
+=========================================*/
+
+SELECT TRY_CONVERT(DATETIME, '1752-12-31');
+SELECT TRY_CONVERT(DATETIME, '1753-01-01');
+
+SELECT TRY_CAST('1' AS INTEGER);
+SELECT TRY_CAST('B' AS INTEGER);
+
+SELECT TRY_PARSE('1' AS INTEGER);
+SELECT TRY_PARSE('B' AS INTEGER);
