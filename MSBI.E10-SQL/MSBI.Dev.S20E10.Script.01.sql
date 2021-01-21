@@ -482,8 +482,8 @@ FROM Sales.Customers AS Customer
      INNER JOIN Sales.Orders AS [Order]
           ON Customer.custid = [Order].custid
 WHERE 
-          Customer.custid <= 2
-     AND [Order].orderid %2 = 0
+	Customer.custid <= 2
+	AND [Order].orderid %2 = 0
 ORDER BY Customer.custid, [Order].orderid
 FOR JSON AUTO;
 
@@ -497,8 +497,8 @@ FROM Sales.Customers AS Customer
      INNER JOIN Sales.Orders AS [Order]
           ON Customer.custid = [Order].custid
 WHERE 
-          Customer.custid <= 2
-     AND [Order].orderid %2 = 0
+	Customer.custid <= 2
+	AND [Order].orderid %2 = 0
 ORDER BY Customer.custid, [Order].orderid
 FOR JSON PATH;
 
@@ -512,8 +512,8 @@ FROM Sales.Customers AS Customer
      INNER JOIN Sales.Orders AS [Order]
           ON Customer.custid = [Order].custid
 WHERE 
-          Customer.custid <= 2
-     AND [Order].orderid %2 = 0
+	Customer.custid <= 2
+	AND [Order].orderid %2 = 0
 ORDER BY Customer.custid, [Order].orderid
 FOR JSON PATH;
 
