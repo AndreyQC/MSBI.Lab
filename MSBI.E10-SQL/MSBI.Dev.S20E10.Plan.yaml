@@ -1,29 +1,15 @@
 ---
 topics:
-- topicname: Using Dynamic SQL
+- topicname: Querying and Managing XML Data
   subtopics:
-   - subtopicname: Dynamic SQL Overview
-   - subtopicname: Uses for Dynamic SQL
-   - subtopicname: The EXECUTE Command
-   - subtopicname: SQL Injection
-   - subtopicname: Using sp_executesql
-   - subtopicname: Use case scenarios 
-- topicname: Understanding Temporary Tables
-- topicname: Designing and Implementing Stored Procedures
+   - subtopicname: Returning Results As XML with FOR XML
+   - subtopicname: Querying XML Data with XQuery
+   - subtopicname: Using the XML Data Type
+- topicname: JSON data in SQL Server
   subtopics:
-   - subtopicname: Understanding Stored Procedures
-     keywords: [SET NOCOUNT ON, RETURN and Return Codes,Input Parameters,Output Parameters]
-   - subtopicname: Branching Logic
-     keywords: [IF/ELSE, WHILE,WAITFOR,GOTO]
-   - subtopicname: Developing Stored Procedures
-     keywords: [Stored Procedures and Error Handling, Dynamic SQL in Stored Procedures]
-- topicname: Implementing Triggers
-  subtopics:
-   - subtopicname: DML Triggers
-   - subtopicname: AFTER Triggers
-     keywords: [Nested AFTER Triggers]
-   - subtopicname: INSTEAD OF Triggers
-   - subtopicname: DML Trigger Functions
-     keywords: [UP DATE (),COLUMNS _UPDATED()]
-- topicname: Using Cursors
+   - subtopicname: Key JSON capabilities of SQL Server and SQL Database
+   - subtopicname: Extract values from JSON text and use them in queries
+   - subtopicname: Change JSON values
+   - subtopicname: Convert JSON collections to a rowset
+   - subtopicname: Convert SQL Server data to JSON or export JSON
 ---
