@@ -7,11 +7,6 @@ topics:
    - subtopicname: The EXECUTE Command
    - subtopicname: SQL Injection
    - subtopicname: Using sp_executesql
-- topicname: Understanding Temporary Tables
-   - subtopicname: Global Temporary Table
-   - subtopicname: Local Temporary Table
-   - subtopicname: Table Variable
-   - subtopicname: Temporary Tables vs Table Variables
 - topicname: Designing and Implementing Stored Procedures
   subtopics:
    - subtopicname: Understanding Stored Procedures
@@ -28,6 +23,6 @@ topics:
    - subtopicname: INSTEAD OF Triggers
    - subtopicname: Nested and Recursive Triggers 
    - subtopicname: DML Trigger Functions
-     keywords: [UPDATE() ,COLUMNS _UPDATED()]
+     keywords: [UPDATE(), COLUMNS _UPDATED()]
 - topicname: Using Cursors
 ---
