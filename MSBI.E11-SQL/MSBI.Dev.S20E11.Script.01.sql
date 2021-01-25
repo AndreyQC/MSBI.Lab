@@ -1,201 +1,13 @@
 /*=========================================
-MSBI.DEVELOPER.COURSE.S18E11.SCRIPT
+MSBI.DEVELOPER.COURSE.S21E11.SCRIPT
 =========================================*/
 
-
-/*=====================================================================================================================
-heap
-========================================================================================================================*/
---IF OBJECT_ID('dbo.TestStructure', 'U') IS NOT NULL
---DROP table dbo.TestStructure
---GO
-
---CREATE TABLE dbo.TestStructure
---(
---    id INT NOT NULL,
---    filler1 CHAR(36) NOT NULL,
---    filler2 CHAR(216) NOT NULL
---);
-
-
-
----- review type
---SELECT 
---    OBJECT_NAME(object_id) AS table_name,
---    name AS index_name, 
---    type, type_desc
---FROM sys.indexes
---WHERE object_id = OBJECT_ID(N'dbo.TestStructure', N'U');
---go
-
-
----- review pages
---SELECT 
---    index_type_desc, 
---    page_count,
---    record_count, 
---    avg_page_space_used_in_percent
---FROM sys.dm_db_index_physical_stats
---(DB_ID(N'TSQL2012'), OBJECT_ID(N'dbo.TestStructure'), NULL, NULL , 'DETAILED');
---EXEC dbo.sp_spaceused @objname = N'dbo.TestStructure', @updateusage = true;
-
-
----- insert some data
---INSERT INTO dbo.TestStructure
---(id, filler1, filler2)
---VALUES
---(1, 'a', 'b');
-
-
---dbcc ind
---(
---'TSQL2012' /*Database Name*/
---,'dbo.TestStructure' /*Table Name*/
---,-1 /*Display information for all pages of all indexes*/
---);
-
-
----- Redirecting DBCC PAGE output to console
---dbcc traceon(3604)
---dbcc page
---(
---'TSQL2012' /*Database Name*/
---,1 /*File ID*/
---,622 /*Page ID*/
---,3 /*Output mode: 3 - display page header and row details */
---);
----- review pages agian
-
-
---SELECT 
---    index_type_desc, 
---    page_count,
---    record_count, 
---    avg_page_space_used_in_percent
---FROM sys.dm_db_index_physical_stats
---(DB_ID(N'TSQL2012'), OBJECT_ID(N'dbo.TestStructure'), NULL, NULL , 'DETAILED');
---EXEC dbo.sp_spaceused @objname = N'dbo.TestStructure', @updateusage = true;
-
----- insert much more
---DECLARE @i AS int = 1;
---WHILE @i < 30
---BEGIN
---SET @i = @i + 1;
---INSERT INTO dbo.TestStructure
---(id, filler1, filler2)
---VALUES
---(@i, 'a', 'b');
---END;
-
-
----- review pages agian
---SELECT index_type_desc, page_count,
---record_count, avg_page_space_used_in_percent
---FROM sys.dm_db_index_physical_stats
---(DB_ID(N'TSQL2012'), OBJECT_ID(N'dbo.TestStructure'), NULL, NULL , 'DETAILED');
---EXEC dbo.sp_spaceused @objname = N'dbo.TestStructure', @updateusage = true;
-
----- still one page
-
-
----- insert again
---INSERT INTO dbo.TestStructure
---(id, filler1, filler2)
---VALUES
---(31, 'a', 'b');
-
-
----- review pages agian
---SELECT index_type_desc, page_count,
---record_count, avg_page_space_used_in_percent
---FROM sys.dm_db_index_physical_stats
---(DB_ID(N'TSQL2012'), OBJECT_ID(N'dbo.TestStructure'), NULL, NULL , 'DETAILED');
---EXEC dbo.sp_spaceused @objname = N'dbo.TestStructure', @updateusage = true;
-
-
-
----- add 8 pages
---DECLARE @i AS int = 31;
---WHILE @i < 240
---BEGIN
---SET @i = @i + 1;
---INSERT INTO dbo.TestStructure
---(id, filler1, filler2)
---VALUES
---(@i, 'a', 'b');
---END;
-
----- review pages agian
---SELECT index_type_desc, page_count,
---record_count, avg_page_space_used_in_percent
---FROM sys.dm_db_index_physical_stats
---(DB_ID(N'TSQL2012'), OBJECT_ID(N'dbo.TestStructure'), NULL, NULL , 'DETAILED');
---EXEC dbo.sp_spaceused @objname = N'dbo.TestStructure', @updateusage = true;
-
---=============================================================================
--- clustered
---=============================================================================
-
---TRUNCATE TABLE dbo.TestStructure;
---CREATE CLUSTERED INDEX idx_cl_id ON dbo.TestStructure(id);
-
---SELECT index_type_desc, page_count,
---record_count, avg_page_space_used_in_percent
---FROM sys.dm_db_index_physical_stats
---(DB_ID(N'TSQL2012'), OBJECT_ID(N'dbo.TestStructure'), NULL, NULL , 'DETAILED');
---EXEC dbo.sp_spaceused @objname = N'dbo.TestStructure', @updateusage = true;
-
---go
----- add 621 pages
---DECLARE @i AS int = 0;
---WHILE @i < 18630
---BEGIN
---SET @i = @i + 1;
---INSERT INTO dbo.TestStructure
---(id, filler1, filler2)
---VALUES
---(@i, 'a', 'b');
---END;
-
----- observe page
---SELECT index_type_desc, index_depth, index_level, page_count,
---record_count, avg_page_space_used_in_percent
---FROM sys.dm_db_index_physical_stats
---(DB_ID(N'TSQL2012'), OBJECT_ID(N'dbo.TestStructure'), NULL, NULL , 'DETAILED');
---EXEC dbo.sp_spaceused @objname = N'dbo.TestStructure', @updateusage = true;
-
-
---INSERT INTO dbo.TestStructure
---(id, filler1, filler2)
---VALUES
---(1, 'a', 'b');
-
-
+USE [TSQL2012];
+GO
 
 /*====================================================================================
 Supporting Queries with Indexes
 =====================================================================================*/
-
---SARG!!!!
-SELECT 
-    orderid, 
-    custid, 
-    orderdate, 
-    shipname
-FROM Sales.Orders
-WHERE DATEDIFF(day, '20060709', orderdate) <= 2
-	AND DATEDIFF(day, '20060709', orderdate) > 0;
-
-
-SELECT 
-    orderid, 
-    custid, 
-    orderdate, 
-    shipname
-FROM Sales.Orders
-WHERE orderdate<=DATEADD(day, 2, '20060709') 
-	AND   orderdate >'20060709'
-
 
 --Supporting queries with indexes
 
@@ -277,12 +89,15 @@ WHERE shipregion = N'Region 2';
 
 
 --covering index
+
+--index scan
 SELECT orderid, custid, shipregion
 FROM [dbo].[OrdersIdx]
 WHERE shipregion = N'Isle of Wight';
 
+--force seek
 SELECT orderid, custid, shipregion
-FROM [dbo].[OrdersIdx] WiTH (FORCESEEK)
+FROM [dbo].[OrdersIdx] WITH (FORCESEEK)
 WHERE shipregion = N'Isle of Wight';
 
 CREATE NONCLUSTERED INDEX [IX_OrdersIdx_shipregion]
@@ -294,6 +109,27 @@ GO
 
 DROP TABLE IF EXISTS [dbo].[OrdersIdx];
 DROP TABLE IF EXISTS [dbo].[OrdersNonIdx];
+
+
+--SARG!!!!
+SELECT 
+    orderid, 
+    custid, 
+    orderdate, 
+    shipname
+FROM Sales.Orders
+WHERE DATEDIFF(day, '20060709', orderdate) <= 2
+	AND DATEDIFF(day, '20060709', orderdate) > 0;
+
+
+SELECT 
+    orderid, 
+    custid, 
+    orderdate, 
+    shipname
+FROM Sales.Orders
+WHERE orderdate<=DATEADD(day, 2, '20060709') 
+	AND   orderdate >'20060709'
 
 
 /*====================================================================================
@@ -351,14 +187,25 @@ GO
 
 
 --=======================================================================
--- Statistic
+-- Statistics
 --=======================================================================
 
-DBCC SHOW_STATISTICS(N'Sales.Orders', N'idx_nc_empid');
+DBCC SHOW_STATISTICS(N'Sales.Orders', N'idx_nc_shippeddate');
 
-DBCC SHOW_STATISTICS(N'Sales.Orders', N'idx_nc_empid') WITH STAT_HEADER;
+DBCC SHOW_STATISTICS(N'Sales.Orders', N'idx_nc_shippeddate') WITH STAT_HEADER;
 
-DBCC SHOW_STATISTICS(N'Sales.Orders', N'idx_nc_empid') WITH HISTOGRAM;
+DBCC SHOW_STATISTICS(N'Sales.Orders', N'idx_nc_shippeddate') WITH HISTOGRAM;
+
+SELECT 
+    orderid, 
+    custid, 
+    shippeddate
+FROM Sales.Orders
+WHERE shippeddate >= '20061011' 
+	AND shippeddate < '20061021';
+
+
+UPDATE STATISTICS Sales.Orders WITH FULLSCAN;
 
 
 SELECT
@@ -380,88 +227,6 @@ FROM
 WHERE
 	sts.[object_id] = OBJECT_ID(N'Sales.Orders', N'U')
 ;
-
---=======================================================================
--- drop statistic
---=======================================================================
-DECLARE @statistics_name AS NVARCHAR(128), @ds AS NVARCHAR(1000);
-DECLARE acs_cursor CURSOR FOR
-SELECT name AS statistics_name
-FROM sys.stats
-WHERE object_id = OBJECT_ID(N'Sales.Orders', N'U')
-AND auto_created = 1;
-OPEN acs_cursor;
-
-FETCH NEXT FROM acs_cursor INTO @statistics_name;
-
-WHILE @@FETCH_STATUS = 0
-    BEGIN
-        SET @ds = N'DROP STATISTICS Sales.Orders.' + @statistics_name +';';
-        EXEC(@ds);
-        FETCH NEXT FROM acs_cursor INTO @statistics_name;
-    END;
-
-CLOSE acs_cursor;
-DEALLOCATE acs_cursor;
-
-
-SELECT 
-    OBJECT_NAME(object_id) AS table_name,
-    name AS statistics_name, auto_created
-FROM sys.stats
-WHERE object_id = OBJECT_ID(N'Sales.Orders', N'U');
-
-
-ALTER INDEX idx_nc_empid ON Sales.Orders REBUILD;
-SELECT * FROM Sales.Orders
-
-SELECT DISTINCT empid FROM Sales.Orders
-DBCC SHOW_STATISTICS(N'Sales.Orders',N'idx_nc_empid') WITH HISTOGRAM;
-
-
-DBCC SHOW_STATISTICS(N'Sales.Orders',N'idx_nc_empid') WITH STAT_HEADER;
-
-
-CREATE NONCLUSTERED INDEX idx_nc_custid_shipcity ON Sales.Orders(custid, shipcity);
-
-DBCC SHOW_STATISTICS(N'Sales.Orders',N'idx_nc_custid_shipcity') WITH HISTOGRAM;
-
-SELECT 
-    orderid, 
-    shipaddress, 
-    custid, 
-    shipcity
-FROM Sales.Orders
-WHERE custid = 42;
-
-SELECT 
-    OBJECT_NAME(object_id) AS table_name,
-    name AS statistics_name
-FROM sys.stats
-WHERE object_id = OBJECT_ID(N'Sales.Orders', N'U')
-AND auto_created = 1;
-
-
-SELECT 
-    orderid, 
-    custid, 
-    shipcity
-FROM Sales.Orders
-WHERE shipcity = N'Vancouver';
-
-
-SELECT 
-    OBJECT_NAME(s.object_id) AS table_name,
-    S.name AS statistics_name,
-    C.name AS column_name
-FROM sys.stats AS S
-    INNER JOIN sys.stats_columns AS SC
-        ON S.stats_id = SC.stats_id
-    INNER JOIN sys.columns AS C
-        ON S.object_id= C.object_id AND SC.column_id = C.column_id
-WHERE S.object_id = OBJECT_ID(N'Sales.Orders', N'U')
-    AND auto_created = 1;
-
 
 
 /*=========================================================================================================================================
@@ -556,14 +321,8 @@ exec dbo.GetAverageSalary @Country='Canada';
 dbcc freeproccache
 go
 
-
 exec dbo.GetAverageSalary @Country='Canada';
 exec dbo.GetAverageSalary @Country='USA';
-
-
-update dbo.Employees set Country='Germany' where Country='USA';
-exec dbo.GetAverageSalary @Country='Germany';
-
 
 -- observe  cache
 select
@@ -572,16 +331,12 @@ from
     sys.dm_exec_cached_plans p
         cross apply sys.dm_exec_sql_text(p.plan_handle) t
 		cross apply sys.dm_exec_query_plan(p.plan_handle) qp
---where
-        --p.cacheobjtype like 'Compiled Plan%' and
-        --t.[text] like '%Employees%'
 order by
     p.objtype desc
 option (recompile)
 
-SELECT * FROM dbo.Employees WHERE Country='Canada'
 
-
+DROP PROC IF EXISTS dbo.GetAverageSalary;
 DROP TABLE IF EXISTS dbo.Employees;
 
 /*=========================================================================================================================================
@@ -656,8 +411,6 @@ FROM Sales.Customers AS C
         ON C.custid = O.custid;
 
 
-
-DBCC DROPCLEANBUFFERS;
 SELECT 
     C.custid, 
     C.companyname,
