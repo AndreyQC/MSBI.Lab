@@ -1,0 +1,23 @@
+---
+topics:
+- topicname: Designing and Implementing Views
+  subtopics:
+    - subtopicname: Creating Views
+    - subtopicname: Indexed Views
+    - subtopicname: Partitioned Views
+    - subtopicname: Modifying Data Through a View
+- topicname: Implementing User-Defined Functions
+  subtopics:
+    - subtopicname: Scalar UDFs
+    - subtopicname: Inline Table-Valued UDF
+    - subtopicname: Multistatement Table-Valued UDF
+    - subtopicname: Limitations on UDFs
+- topicname: Hierarchies
+  subtopics:
+    - subtopicname: Adjacency List Model
+    - subtopicname: Nested Set Model of Hierarchies
+    - subtopicname: Materialized Path
+      keywords: [HierarchyID]
+- topicname: Introduction to Power BI
+- topicname: Git Branching Model
+---

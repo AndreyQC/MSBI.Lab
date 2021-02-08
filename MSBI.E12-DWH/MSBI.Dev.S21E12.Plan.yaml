@@ -1,0 +1,37 @@
+---
+topics:
+- topicname: Common BI solution architecture
+  subtopics:
+   - subtopicname: MS BI Architecture
+   - subtopicname: Data Warehouse structure
+     keywords: [staging area, data mart, data warehouse]
+- topicname: Data Warehouse
+  subtopics:
+   - subtopicname: Reporting Problems with a Normalized Schema
+   - subtopicname: Star schema
+   - subtopicname: Snowflake Schema
+   - subtopicname: Granularity Level
+   - subtopicname: Data Warehouse structure
+   - subtopicname: Kimball model
+   - subtopicname: Inmon model
+- topicname: Best SQL Practices for Data Warehousing
+   - subtopicname: Columnstore index
+   - subtopicname: Partition Table
+- topicname: Designing Dimensions
+  subtopics:
+   - subtopicname: Dimension Column Types
+   - subtopicname: Dimension Types
+     keywords: [Conformed dimension, Junk dimension, Degenerate dimension, Role-playing dimension]
+   - subtopicname: Hierarchies
+   - subtopicname: Slowly Changing Dimensions
+     keywords: ['SCD Type 0, SCD Type I, SCD Type II, SCD Type III']
+   - subtopicname: Dummy Records
+- topicname: Designing Fact Tables
+  subtopics:
+   - subtopicname: Fact Table Column Types
+   - subtopicname: Fact Table Types
+     keywords: [Factless Fact Table, Transaction Fact Tables, Periodic Snapshot Fact Tables, Accumulating Snapshot Fact Tables]
+   - subtopicname: Additivity of Measures
+     keywords: [Additive measures, Semi-Additive measures, Non-additive measures]   
+---
+   
