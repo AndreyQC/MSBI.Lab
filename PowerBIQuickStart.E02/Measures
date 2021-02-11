@@ -1,0 +1,19 @@
+Measures:
+
+AVG USA Revenue = CALCULATE(AVERAGE(FactSales[Revenue]), FILTER(FactSales, FactSales[Country] = "USA")) 
+---------------
+TotalYearToDate = TOTALYTD(sum(FactSales[Revenue]),'Date'[Date])
+---------------
+LYtoDate = CALCULATE([TotalYearToDate], SAMEPERIODLASTYEAR('Date'[Date])) 
+---------------
+Dif = 
+var diff = [TotalYearToDate]-[LYtoDate]
+
+Return
+IF(ISBLANK(DIFF),0,diff)
+
+----------------
+DIF% = DIVIDE([TotalYearToDate],[LYtoDate],0)
+----------------
+
+Country = DISTINCT(Geography[Country])
