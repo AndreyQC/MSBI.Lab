@@ -1,0 +1,51 @@
+Column
+GroupValue = SWITCH(TRUE(), FactQualityOfLife[Value] >= 100, 100, FactQualityOfLife[Value] >= 80, 80, FactQualityOfLife[Value] >= 60, 60, FactQualityOfLife[Value] >= 40, 40, FactQualityOfLife[Value] >= 20, 20, 0)
+
+Mesure
+Avg Safety Index = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Safety Index"))
+---------
+Avg Quality of Life Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Quality of Life Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Avg Purchasing Power Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Purchasing Power Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Avg Safety Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Safety Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Avg Health Care Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Health Care Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Avg Cost of Living Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Cost of Living Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Avg Property Price to Income Ratio =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Property Price to Income Ratio"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Avg Traffic Commute Time Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Traffic Commute Time Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Avg Pollution Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Pollution Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Avg Climate Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Climate Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
+Quality of Life Index	1
+Purchasing Power Index	2
+Safety Index	3
+Health Care Index	4
+Cost of Living Index	5
+Property Price to Income Ratio	6
+Traffic Commute Time Index	7
+Pollution Index	8
+Climate Index	9
