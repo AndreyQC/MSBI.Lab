@@ -5,31 +5,6 @@ MSSQL.E02.Script.01.sql
 USE [TSQL2012];
 GO
 
-/*==============================================================================
-Three-Valued Predicate Logic
-
-================================================================================*/
-
---predicate
-SELECT [empid]
-      ,[lastname]
-      ,[region]
-  FROM [TSQL2012].[HR].[Employees]
-  WHERE [region] = N'WA'
-
-SELECT [empid]
-      ,[lastname]
-      ,[region]
-  FROM [TSQL2012].[HR].[Employees]
-  WHERE [region] <> N'WA'
-
---Null
-SELECT [empid]
-      ,[lastname]
-      ,[region]
-  FROM [TSQL2012].[HR].[Employees]
-  WHERE [region] <> 'WA' OR [region] IS NUll
-
 
 /*==============================================================================
 Getting Started with the SELECT Statement
@@ -58,7 +33,7 @@ SELECT
 FROM HR.Employees
 ORDER BY empid;
 
--- wrong way to sort
+-- not recommended way to sort
 SELECT
 	empid,
 	lastname
@@ -111,6 +86,33 @@ FROM HR.Employees;
 
 
 /*==============================================================================
+Three-Valued Predicate Logic
+
+================================================================================*/
+
+--predicate
+SELECT [empid]
+      ,[lastname]
+      ,[region]
+  FROM [TSQL2012].[HR].[Employees]
+  WHERE [region] = N'WA'
+
+SELECT [empid]
+      ,[lastname]
+      ,[region]
+  FROM [TSQL2012].[HR].[Employees]
+  WHERE [region] <> N'WA'
+
+--Null
+SELECT [empid]
+      ,[lastname]
+      ,[region]
+  FROM [TSQL2012].[HR].[Employees]
+  WHERE [region] <> 'WA' OR [region] IS NUll
+
+
+
+/*==============================================================================
 Logical Query Processing Phases
 
 ================================================================================*/
@@ -138,7 +140,7 @@ SELECT
 	YEAR(hiredate) AS yearhired
 FROM HR.Employees
 WHERE YEAR(hiredate) >= 2003;
---should use YEAR(hiredate) >= 2003 better hiredate >= '20030101'
+
 
 
 --Note that an alias created by the SELECT phase isnt even visible to other expressions that
@@ -605,7 +607,8 @@ IF NOT EXISTS(SELECT 1 FROM Production.Suppliers WHERE companyname = N'Supplier 
 	VALUES(N'Supplier XYZ', N'Jiru', N'Head of Security', N'42 Sekimai Musashino-shi',
 		N'Tokyo', N'01759', N'Japan', N'(02) 4311-2609');
 
-SELECT * FROM Production.Suppliers
+SELECT * FROM Production.Suppliers;
+SELECT * FROM Production.Products;
 
 --This supplier does not have any related products in the Production.Products table and is used in examples demonstrating nonmatches.
 
