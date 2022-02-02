@@ -274,7 +274,7 @@ WITH EmpsCTE AS
 (
     SELECT empid, mgrid, firstname, lastname, 0 AS distance
     FROM HR.Employees
-    WHERE empid = 1
+    WHERE mgrid IS NULL
 
     UNION ALL
 
@@ -289,7 +289,7 @@ FROM EmpsCTE;
 
 SELECT empid, mgrid, firstname, lastname, 0 AS distance
 FROM HR.Employees
-WHERE empid = 1
+WHERE mgrid IS NULL
 
 UNION ALL
 SELECT empid, mgrid, firstname, lastname, 1 AS distance
@@ -499,8 +499,8 @@ GROUP BY S.shipperid, S.companyname;
 
 SELECT 
     S.shipperid,
-    MAX(S.companyname) AS numorders,
-    COUNT(*) AS shippedorders
+    MAX(S.companyname) AS companyname,
+    COUNT(*) AS numorders
 FROM Sales.Shippers AS S
     INNER JOIN Sales.Orders AS O
         ON S.shipperid = O.shipperid

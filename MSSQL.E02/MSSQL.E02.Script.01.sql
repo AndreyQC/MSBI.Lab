@@ -4,7 +4,7 @@ MSSQL.E02.Script.01.sql
 
 USE [TSQL2012];
 GO
-
+SELECT 1;
 
 /*==============================================================================
 Getting Started with the SELECT Statement
@@ -577,7 +577,7 @@ DECLARE @pagesize AS BIGINT = 25, @pagenum AS BIGINT = 4;
 SELECT orderid, orderdate, custid, empid
 FROM Sales.Orders
 ORDER BY orderdate DESC, orderid DESC
-OFFSET (@pagesize - 1) * @pagesize ROWS FETCH NEXT @pagesize ROWS ONLY;
+OFFSET (@pagenum - 1) * @pagesize ROWS FETCH NEXT @pagesize ROWS ONLY;
 
 
 

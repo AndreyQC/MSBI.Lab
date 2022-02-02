@@ -156,7 +156,7 @@ GO
 
 CREATE TABLE Production.CategoriesTest
 (
-    categoryid INT NOT NULL IDENTITY,
+    categoryid INT NOT NULL,
     categoryname NVARCHAR(15) NOT NULL,
     description NVARCHAR(200) NOT NULL,
     CONSTRAINT PK_CategoriesTest PRIMARY KEY NONCLUSTERED(categoryid)
@@ -167,16 +167,18 @@ CREATE CLUSTERED INDEX [CI_Production_CategoriesTest]	--Non unique!
 	ON [Production].[CategoriesTest] ([categoryname]);
 GO
 
+INSERT INTO [Production].[CategoriesTest]
+           ([categoryid],[categoryname],[description])
+     VALUES
+           (1,'testa','tet'),
+		   (2,'testa','tet');
+
 
 -- get list of constraint
 SELECT *
 FROM sys.key_constraints
 WHERE type = 'PK';
 
--- get list of indexes which support logical constraints
-SELECT *
-FROM sys.indexes
-WHERE object_id = OBJECT_ID('Production.Categories') AND name = 'PK_Categories';
 
 /*---------------------------------------------------------------------------------------- 
  Unique Constraints
@@ -195,25 +197,44 @@ CREATE TABLE Production.CategoriesTest
 ALTER TABLE Production.Categories
 	ADD CONSTRAINT UC_Categories UNIQUE (categoryname);
 GO
+
+INSERT INTO [Production].[CategoriesTest]
+           ([categoryid],[categoryname],[description])
+     VALUES
+           (1,'testa','tet');
+
+
 --The unique constraint does not require the column to be NOT NULL. You can allow NULL in
 --a column and still have a unique constraint, but only one row can be NULL.
-
-
-DROP TABLE IF EXISTS Production.CategoriesTest;
-GO
 
 
 SELECT *
 FROM sys.key_constraints
 WHERE type = 'UQ';
 
+
+DROP TABLE IF EXISTS Production.CategoriesTest;
+GO
+
+
 /*---------------------------------------------------------------------------------------- 
  Foreign Key Constraints
 -----------------------------------------------------------------------------------------*/
 
-USE TSQL2012
+DROP TABLE IF EXISTS [Production].[ProductsTest];
 GO
-ALTER TABLE Production.Products WITH CHECK
+
+CREATE TABLE [Production].[ProductsTest] (
+	[productid] int NOT NULL,
+	[productname] nvarchar(40) NOT NULL,
+	[categoryid] int NOT NULL
+		CONSTRAINT [FK_ProductsTest_Categories] FOREIGN KEY
+			REFERENCES [Production].[Categories] (categoryid)
+);
+GO
+
+
+ALTER TABLE Production.ProductsTest WITH CHECK
 	ADD CONSTRAINT FK_Products_Categories FOREIGN KEY(categoryid)
 	REFERENCES Production.Categories (categoryid)
 GO
@@ -223,44 +244,79 @@ SELECT *
 FROM sys.foreign_keys
 WHERE name = 'FK_Products_Categories';
 
+DROP TABLE IF EXISTS [Production].[ProductsTest];
+GO
+
+
 /*---------------------------------------------------------------------------------------- 
  Check Constraints
 -----------------------------------------------------------------------------------------*/
 
-
-ALTER TABLE Production.Products WITH CHECK
-	ADD CONSTRAINT CK_Products_unitprice
-	CHECK (unitprice>=0);
+DROP TABLE IF EXISTS [Production].[ProductsTest];
 GO
+
+CREATE TABLE [Production].[ProductsTest] (
+	[productid] int NOT NULL,
+	[productname] nvarchar(40) NOT NULL,
+	[unitprice] money NOT NULL,
+	CONSTRAINT [CK_ProductsTest_Unitprice] CHECK (unitprice>=0)
+);
+GO
+
+ALTER TABLE [Production].[ProductsTest] WITH CHECK
+	ADD CONSTRAINT [CK_Products_Unitprice] CHECK (unitprice>=0);
+GO
+
+INSERT INTO
+	[Production].[ProductsTest]
+	([productid], [productname], [unitprice])
+VALUES
+	(1, 'test', -100.00);
 
 --
 SELECT *
 FROM sys.check_constraints
-WHERE parent_object_id = OBJECT_ID('Production.Products');
+WHERE parent_object_id = OBJECT_ID('Production.ProductsTest');
+
+
+DROP TABLE IF EXISTS [Production].[ProductsTest];
+GO
+
 
 /*---------------------------------------------------------------------------------------- 
  Default Constraints
 -----------------------------------------------------------------------------------------*/
 
+DROP TABLE IF EXISTS [Production].[ProductsTest];
+GO
 
-CREATE TABLE Production.Products
-(
-    productid INT NOT NULL IDENTITY,
-    productname NVARCHAR(40) NOT NULL,
-    supplierid INT NOT NULL,
-    categoryid INT NOT NULL,
-    unitprice MONEY NOT NULL 
-    CONSTRAINT DF_Products_unitprice DEFAULT(0),
-    discontinued BIT NOT NULL
-    CONSTRAINT DF_Products_discontinued DEFAULT(0),
+CREATE TABLE [Production].[ProductsTest] (
+	[productid] int NOT NULL,
+	[productname] nvarchar(40) NOT NULL,
+	[unitprice] money NOT NULL CONSTRAINT [DF_ProductsTest_Unitprice] DEFAULT(0)
 );
+GO
+
+ALTER TABLE [Production].[ProductsTest] WITH CHECK
+	ADD CONSTRAINT [DF_ProductsTest_Unitprice] DEFAULT(0) FOR [unitprice];
+GO
+
+INSERT INTO
+	[Production].[ProductsTest]
+	([productid], [productname])
+VALUES
+	(1, 'test');
+
+SELECT * FROM [Production].[ProductsTest];
+
 
 SELECT *
 FROM sys.default_constraints
-WHERE parent_object_id = OBJECT_ID('Production.Products');
+WHERE parent_object_id = OBJECT_ID('Production.ProductsTest');
 
 
-
+DROP TABLE IF EXISTS [Production].[ProductsTest];
+GO
 
 /*=========================================
 Views
