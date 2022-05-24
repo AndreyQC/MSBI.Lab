@@ -1,0 +1,25 @@
+﻿1. Introduction - 5 min
+  1.1. About course.
+  1.2. Instalation.
+2. Theory part - 35 min
+  2.1 Overview of Power BI Desktop and Power BI service.
+  2.2 Areas: Report, Data, Model
+  2.3 Dataset upload
+  2.4 Transformation window: queries, applied steps
+  2.5 Enter data
+  2.6 Base transformations:
+        Change data type
+        Date type
+        Duplicate column/Delete column
+        Append query
+        Split column
+        Add column: Custom. Column From Examples, Conditional Column
+        Get data from folder
+        Merge queries
+  2.7 Groups, query dependencies
+  2.8 Upload from folders
+  2.9 Other transformations:
+        Transpose
+        Pivot-unpivot
+  2.10 Query parameters
+

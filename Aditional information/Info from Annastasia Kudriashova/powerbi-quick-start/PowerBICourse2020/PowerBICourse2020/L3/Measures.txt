@@ -1,0 +1,117 @@
+Calc Quality of Life Index = 
+VAR purchasingPowerInclRentIndex =
+    CALCULATE (
+        MAX ( FactLifeQualityIndex[Value] ),
+        FILTER (
+            ALLEXCEPT ( DimTypeIndex, DimTypeIndex[TypeIndex] ),
+            DimTypeIndex[Name] = "Purchasing Power Index"
+        )
+    )
+VAR housePriceToIncomeRatio =
+    CALCULATE (
+        MAX ( FactLifeQualityIndex[Value] ),
+        FILTER (
+            ALLEXCEPT ( DimTypeIndex, DimTypeIndex[TypeIndex] ),
+            DimTypeIndex[Name] = "Property Price to Income Index"
+        )
+    )
+VAR costOfLivingIndex =
+    CALCULATE (
+        MAX ( FactLifeQualityIndex[Value] ),
+        FILTER (
+            ALLEXCEPT ( DimTypeIndex, DimTypeIndex[TypeIndex] ),
+            DimTypeIndex[Name] = "Cost of living Index"
+        )
+    )
+VAR safetyIndex =
+    CALCULATE (
+        MAX ( FactLifeQualityIndex[Value] ),
+        FILTER (
+            ALLEXCEPT ( DimTypeIndex, DimTypeIndex[TypeIndex] ),
+            DimTypeIndex[Name] = "Safety Index"
+        )
+    )
+VAR healthIndex =
+    CALCULATE (
+        MAX ( FactLifeQualityIndex[Value] ),
+        FILTER (
+            ALLEXCEPT ( DimTypeIndex, DimTypeIndex[TypeIndex] ),
+            DimTypeIndex[Name] = "Health Care Index"
+        )
+    )
+VAR trafficTimeIndex =
+    CALCULATE (
+        MAX ( FactLifeQualityIndex[Value] ),
+        FILTER (
+            ALLEXCEPT ( DimTypeIndex, DimTypeIndex[TypeIndex] ),
+            DimTypeIndex[Name] = "Traffic Commute Time Index"
+        )
+    )
+VAR pollutionIndex =
+    CALCULATE (
+        MAX ( FactLifeQualityIndex[Value] ),
+        FILTER (
+            ALLEXCEPT ( DimTypeIndex, DimTypeIndex[TypeIndex] ),
+            DimTypeIndex[Name] = "Pollution Index"
+        )
+    )
+VAR climateIndex =
+    CALCULATE (
+        MAX ( FactLifeQualityIndex[Value] ),
+        FILTER (
+            ALLEXCEPT ( DimTypeIndex, DimTypeIndex[TypeIndex] ),
+            DimTypeIndex[Name] = "Climate Index"
+        )
+    )
+VAR currentYear =
+    SELECTEDVALUE ( DimDate[Year], 2018 )
+VAR selectedClimate =
+    SELECTEDVALUE ( DimClimateSlicer[Climate], 1 )
+VAR selectedSafety =
+    SELECTEDVALUE ( DimSafetySlicer[Safety], 1 )
+VAR selectedHealth =
+    SELECTEDVALUE ( DimHealthSlicer[Health], 1 )
+VAR selectedCost =
+    SELECTEDVALUE ( DimCostSlicer[Cost], 1 )
+VAR selectedPriceToIncome =
+    SELECTEDVALUE ( DimPriceToIncomeSlicer[PriceToIncome], 1 )
+VAR selectedPollution =
+    SELECTEDVALUE ( DimPollutionSlicer[Pollution], 1 )
+VAR selectedPurchasingpower =
+    SELECTEDVALUE ( DimPurchasingPowerSlicer[Purchasing power], 1 )
+VAR selectedTraffic =
+    SELECTEDVALUE ( DimTrafficSlicer[Traffic], 1 )
+VAR formula2018more =
+    IF (
+        ISBLANK ( purchasingPowerInclRentIndex ),
+        BLANK (),
+        100 + purchasingPowerInclRentIndex * selectedPurchasingpower / 2.5 - ( housePriceToIncomeRatio * selectedPriceToIncome * 1.0 ) - costOfLivingIndex * selectedCost / 10 + safetyIndex * selectedSafety / 2.0 + healthIndex * selectedHealth / 2.5 - trafficTimeIndex * selectedTraffic / 2.0 - pollutionIndex * selectedPollution * 2.0 / 3.0 + climateIndex * selectedClimate / 3.0
+    )
+VAR formula2017 =
+    IF (
+        ISBLANK ( purchasingPowerInclRentIndex ),
+        BLANK (),
+        100 + purchasingPowerInclRentIndex * selectedPurchasingpower / 2.5 - ( housePriceToIncomeRatio * selectedPriceToIncome * 1.0 ) - costOfLivingIndex * selectedCost / 5 + safetyIndex * selectedSafety / 2.0 + healthIndex * selectedHealth / 2.5 - trafficTimeIndex * selectedTraffic / 2.0 - pollutionIndex * selectedPollution * 2.0 / 3.0 + climateIndex * selectedClimate / 3.0
+    )
+VAR formula201517 =
+    IF (
+        ISBLANK ( purchasingPowerInclRentIndex ),
+        BLANK (),
+        100 + purchasingPowerInclRentIndex * selectedPurchasingpower / 2.5 - ( housePriceToIncomeRatio * selectedPriceToIncome * 1.0 ) - costOfLivingIndex * selectedCost / 5 + safetyIndex * selectedSafety / 2.0 + healthIndex * selectedHealth / 2.5 - trafficTimeIndex * selectedTraffic / 2.0 - pollutionIndex * selectedPollution * 2.0 / 3.0 + climateIndex * selectedClimate / 2.0
+    )
+VAR formula2014less =
+    IF (
+        ISBLANK ( purchasingPowerInclRentIndex ),
+        BLANK (),
+        65 + purchasingPowerInclRentIndex * selectedPurchasingpower - ( housePriceToIncomeRatio * selectedPriceToIncome * 2 ) - costOfLivingIndex * selectedCost / 5 + safetyIndex * selectedSafety * 3 / 4 + healthIndex * selectedHealth / 2 - trafficTimeIndex * selectedTraffic / 2 - pollutionIndex * selectedPollution
+    )
+RETURN
+    SWITCH (
+        TRUE (),
+        currentYear >= 2018, formula2018more,
+        currentYear = 2017, formula2017,
+        currentYear >= 2015, formula201517,
+        formula2014less
+    )
+	
+% calc / exist quality = DIVIDE( ABS([Calc Quality of Life Index] - [Quality of life index]), [Quality of life index], 0)

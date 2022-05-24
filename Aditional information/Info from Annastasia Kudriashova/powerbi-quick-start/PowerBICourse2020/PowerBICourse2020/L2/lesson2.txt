@@ -1,0 +1,35 @@
+Simple Measure:
+Total Sales = SUM(Sales[SalesAmount])
+
+Calc column:
+GrossMargin = Sales[SalesAmount] - Sales[TotalCost]
+
+GrossMarginPct = DIVIDE (Sales[GrossMargin], Sales[SalesAmount] )
+
+Mesure:
+GrossMarginPct = DIVIDE (SUM(Sales[GrossMargin]), SUM(Sales[SalesAmount]) )
+
+Also can use mesure:
+GrossMargin2 = SUM(Sales[SalesAmount]) - SUM(Sales[TotalCost])
+
+More complicated measure:
+Previous Quarter Sales = CALCULATE([Total Sales], PREVIOUSQUARTER(Calendar[DateKey]))
+
+Filters:
+Store Sales = CALCULATE(SUM(Sales[SalesAmount]), Channel[ChannelName] = "Store") 
+Store Sales = CALCULATE([Total Sales], Channel[ChannelName] = "Store")
+
+Tables:
+Countries = DISTINCT(Locations[Country])
+Calendar = CALENDAR (DATE (2005, 1, 1), DATE (2015, 12, 31))
+---
+Column
+GroupValue = SWITCH(TRUE(), FactQualityOfLife[Value] >= 100, 100, FactQualityOfLife[Value] >= 80, 80, FactQualityOfLife[Value] >= 60, 60, FactQualityOfLife[Value] >= 40, 40, FactQualityOfLife[Value] >= 20, 20, 0)
+
+Mesure
+Avg Safety Index = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Safety Index"))
+
+Avg Safety Index =
+VAR avgSI = CALCULATE(AVERAGE(FactQualityOfLife[Value]), FILTER(DimIndexType, DimIndexType[IndexType] = "Safety Index"))
+RETURN IF(ISBLANK(avgSI), 0, avgSI)
+
