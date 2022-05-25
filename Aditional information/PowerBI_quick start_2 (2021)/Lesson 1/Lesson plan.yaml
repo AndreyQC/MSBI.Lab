@@ -1,0 +1,37 @@
+---
+topics:
+-	topicname: Power BI desktop introduction:
+        subtopics:
+    ---		 subtopicname: Configuring Power BI desktop;
+-	topicname: Data Sources:
+        subtopics:
+    ---		 subtopicname: Load data from Database;
+    ---		 subtopicname: Load data from folder;
+    ---		 subtopicname: Load excel file;
+    ---		 subtopicname: Load data from web site with power query;
+-	topicname: Data Transformation:
+        subtopics:
+    ---		subtopicname: Queries and Applied steps;
+    ---		subtopicname: Working with Advanced Editor;
+    ---		subtopicname: Query renaming;
+    ---		subtopicname: Duplicate columns;
+    ---		subtopicname: Working with data types;
+    ---		subtopicname: Date functions in Power BI;
+    ---		subtopicname: Split column by delimiter;
+    ---		subtopicname: Create groups of queries;
+    ---		subtopicname: Add new columns: Conditional column; Column from Example; Custom column; Index column;
+    ---		subtopicname: Power query M;
+    ---		subtopicname: Append and merge queries;
+    ---		subtopicname: First row as header;
+    ---		subtopicname: Query dependences;
+    ---		subtopicname: Query parameters;
+    ---		subtopicname: Create function with parameter;
+    ---		subtopicname: Invoke custom function;
+    ---		subtopicname: Pivot/unpivot data;
+    ---		subtopicname: Filtering out values;
+    ---		subtopicname: Replacing data;
+    ---		subtopicname: Create new query by list of values;
+    ---		subtopicname: Enter data in new query;
+    ---		subtopicname: Create new query by column from another;
+    ---		subtopicname: Working with duplicates;
+    ---		subtopicname: Working with fact and dimensions;

@@ -1,0 +1,27 @@
+topicname: Power BI desktop:
+     subtopics:
+         subtopicname: Gauge, Cards, and KPIs;
+         subtopicname: Show categories with no data;
+         subtopicname: Working with bookmarks;
+         subtopicname: Power BI Q&A natural language queries;
+         subtopicname: Selection panel;
+         subtopicname: Rename measure for visualization;
+topicname: Formatting options Power BI desktop:
+     subtopics:
+         subtopicname: Page view and page size settings;
+         subtopicname: Positioning, aligning, back/forward option;
+         subtopicname: Themes and themes gallery, custom themes;
+         subtopicname: Column tools: data type, format, decimal numbers, data category;      
+topicname: Power BI service:
+     subtopics:
+         subtopicname: Introduction to Power BI Service;
+         subtopicname: Publish from Power BI Desktop to the Service;
+         subtopicname: Overview of dashboards and Power BI Service;
+         subtopicname: Pin a tile on a dashboard; 
+         subtopicname: Add widgets to your dashboard;
+         subtopicname: Navigating content in Power BI Service;
+         subtopicname: Sharing a dashboard;
+         subtopicname: Display your dashboard and report tiles in Focus mode;
+         subtopicname: Power BI Q&A natural language queries in Power BI Service;
+         subtopicname: Install and configure Personal Gateway;
+         subtopicname: Schedule refresh;

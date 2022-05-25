@@ -1,0 +1,15 @@
+topicname: Power BI Mobile:
+     subtopics:
+         subtopicname: Power BI mobile apps;
+         subtopicname: Mobile dashboard layout in Power BI Service;
+         subtopicname: Mobile dashboard layout in Power BI Desktop;
+topicname: Power BI Desktop:
+     subtopics:
+         subtopicname: Integrate Power BI Desktop with R, Python;
+         subtopicname: Analytical panel;         
+         subtopicname: Key influencers visual;
+         subtopicname: Decomposition tree visual;         
+         subtopicname: Smart narrative visual;        
+topicname: Options, data source settings;
+topicname: Dataset Quick Insights
+ 

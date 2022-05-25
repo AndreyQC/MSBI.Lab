@@ -1,0 +1,22 @@
+topicname: Power BI service:
+     subtopics:
+         subtopicname: Organize work in workspaces in Power BI ;
+         subtopicname: Roles in the new workspaces;
+         subtopicname: Creating, sharing, and updating apps;
+         subtopicname: Load report from service;
+topicname: Row-level security
+     subtopics:
+         subtopicname: Create roles in Power BI Desktop;
+         subtopicname: Use RLS table from Database;         
+topicname: Different modes in Power BI:
+     subtopics:
+         subtopicname: Import Data;
+         subtopicname: Direct Query and Direct query limitations;
+         subtopicname: Live Connection;
+         subtopicname: Power BI direct connect to SQL database;    
+         subtopicname: Power BI native query;
+         subtopicname: Power BI Performance Analyzer;
+topicname: Custom Visuals
+     subtopics:
+         subtopicname: Custom visuals gallery;
+         subtopicname: Create you own custom visual;

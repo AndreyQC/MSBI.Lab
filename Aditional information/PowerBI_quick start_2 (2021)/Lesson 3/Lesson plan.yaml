@@ -1,0 +1,44 @@
+topicname: Visualizations in Power BI:
+     subtopics:
+         subtopicname: 3 panels - filters, visuals, fields;
+         subtopicname: Bar chart visual;
+         subtopicname: Pie chart visual;
+         subtopicname: Tree map visual;
+         subtopicname: Line chart visual;
+         subtopicname: Column chart visual;
+         subtopicname: Combo Chart visual - line and column chart;
+         subtopicname: Different types of slicers;
+         subtopicname: Date slicers;
+         subtopicname: Different types of map visuals - map. filled map, shape map;
+         subtopicname: Add text box, shape, image;
+         subtopicname: Use backward for shape;
+         subtopicname: Tables and matrix visuals, Table Styles;
+         subtopicname: Waterfall visual;
+         subtopicname: Funnel visual;
+         subtopicname: Scatter chart visual;   
+         subtopicname: Card visual;
+         subtopicname: Multi-row card visual;
+topicname: Format panel in Power BI:
+     subtopics:
+         subtopicname: conditional formatting;
+         subtopicname: Coloring Charts;
+topicname: Focus Mode and See Data;
+topicname: Work with pages
+     subtopics:
+         subtopicname: Duplicate, rename, add page in Power BI;
+topicname: Dax measures in Power BI
+     subtopics:
+         subtopicname: Create avg measures in Power BI;
+topicname: Hierarchies in Power BI
+     subtopics:
+         subtopicname: Hierarchies;
+         subtopicname: Automation hierarchies for date in Power BI;
+topicname: Auto aggregation for numeric fields (Default Summarization and Categorization);
+topicname: Filters panel in Power BI
+     subtopics:
+         subtopicname: Filters on Visual (Including TopN);
+         subtopicname: Filters on Page;
+         subtopicname: Filters on Report (all pages);
+topicname: Edit interactions panel in Power BI;
+topicname: Gridlines and Snap to Grid;
+topicname: Include and exclude.

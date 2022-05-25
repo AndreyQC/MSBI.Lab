@@ -1,0 +1,26 @@
+Server 
+ECSC00A014AD.epam.com\MSSQL2019
+
+DB
+PBI.QS.VanArsdel
+
+
+Web
+https://www.numbeo.com/quality-of-life/rankings.jsp?title=2020
+
+list
+= {2014..2021}
+
+FactQualityOfLife
+
+
+IndexType
+Quality of Life Index
+Purchasing Power Index
+Safety Index
+Health Care Index
+Cost of Living Index
+Property Price to Income Ratio
+Traffic Commute Time Index
+Pollution Index
+Climate Index

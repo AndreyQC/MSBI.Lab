@@ -1,0 +1,29 @@
+topicname: Power BI service:
+     subtopics:
+         subtopicname: Dashboard settings;
+         subtopicname: Power BI Email Subscriptions;
+         subtopicname: Power BI notifications;
+         subtopicname: Alerts in the Power BI service;
+         subtopicname: Full screen mode in Power BI Service;
+         subtopicname: Dashboard display options;
+         subtopicname: Pin a live page to a dashboard;        
+         subtopicname: Customize dashboard tiles, tiles settings;       
+         subtopicname: Share, print, and export a dashboard;
+         subtopicname: Report Settings;
+         subtopicname: Personal settings;
+topicname: Working with excel:
+     subtopics:
+         subtopicname: Upload an Excel table to Power BI service;
+         subtopicname: Pinning Excel tables;
+         subtopicname: Connect to an Excel table in Power BI service;
+         subtopicname: Excel data with BI content (Power Pivot);
+         subtopicname: Analyze with Excel;
+         subtopicname: Connect to OneDrive for Business, Excel high fidelity;
+topicname: Power BI desktop;
+     subtopics:
+         subtopicname: Working with slicers;
+         subtopicname: Complicate Dax queries;
+         subtopicname: Custom visuals - text search;
+         subtopicname: Heat map visual; 
+         subtopicname: Different result for visuals depend on DAX query;
+         subtopicname: Schedule refresh for web source in Power BI Service;

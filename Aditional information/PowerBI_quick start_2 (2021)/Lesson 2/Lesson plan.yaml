@@ -1,0 +1,24 @@
+topicname: Data model in Power BI:
+     subtopics:
+         subtopicname: Model panel in Power BI Desktop;
+         subtopicname: Manage data relationships in Power BI;
+         subtopicname: Hide fields and measures;
+topicname: Calculated columns and calculated tables in Power BI;
+topicname: Hierarchies:
+     subtopics:
+         subtopicname: Drill up and Drill down functions;
+         subtopicname: Use Expand all;    
+topicname: DAX:
+     subtopics:
+         subtopicname: Date Dim using DAX;
+         subtopicname: Aggregation Functions;    
+         subtopicname: ‘X’ Aggregation Functions;
+         subtopicname: VAR Function
+         subtopicname: Time Intelligence Functions;
+         subtopicname: Text Functions;
+         subtopicname: Table Functions (FILTER, ALL, RELATEDTABLE, etc);
+         subtopicname: CALCULATE;
+         subtopicname: DAX Formatter;
+topicname: Quick measures in Power BI;
+topicname: Time Intelligence Functions;
+ 

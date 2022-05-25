@@ -1,0 +1,13 @@
+AVG Total score = 
+Calculate(
+    AVERAGE('task SubTaskLog'[TotalScore]), 
+    Filter('task Course', 'task Course'[CourseName]= "MSBI.DEV.S21"),
+    FILTER('task Task', 'task Task'[Topic]= "Power BI"))
+	
+	
+	
+ECSC00A014AD\MSSQL2017TM
+MSBI_Anna_Sedina
+
+
+USERNAME()	
